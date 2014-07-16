@@ -22,6 +22,12 @@ class Measurement:
         return time.time()
 
     @classmethod
+    def get_time_since_last_measurement(cls):
+        """ Time since last measurement in seconds (float) """
+        assert( cls.last_measurement )
+        return cls.get_time() - cls.last_measurement
+
+    @classmethod
     def update_last_measurement(cls, t):
         cls.last_measurement = t
 
@@ -70,19 +76,39 @@ class Measurement:
                 "\n◘ NET: " + str(self.net_io)
 
 
+## TODO: debug and extend
+class NiceMeasurement(Measurement):
+    def __str__(self):
+        return ", ".join([str(x) + "%" for x in self.cpu_util])
 
-## XXX for interactive debugging only
-def test():
-    print( Measurement() )
 
-
-## init
+## Take a first (invalid) reading to initialize the system.
 init_measure = Measurement()
 
-# measure
-time.sleep(MEASUREMENT_INTERVAL)
-m1 = Measurement()
+## Takes a reading and ensures that (at least) |interval| seconds are covered.
+#    NOTE: does not handle race conditions (well)
+def take_reading(interval = MEASUREMENT_INTERVAL):
+    t = interval - Measurement.get_time_since_last_measurement()
 
-## show
-print( m1 )
+    ## sleep if necessary
+    if ( t > 0 ):
+        time.sleep(t)
+
+    m = NiceMeasurement()
+    assert(m.timespan >= interval)
+
+    return m
+
+
+## XXX TESTING
+def test_loop():
+    for i in range(10):
+        m = take_reading(0.5)
+        print( m )
+
+
+
+## XXX TESTING
+#print( take_reading() )
+
 
