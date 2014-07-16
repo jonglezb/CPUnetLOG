@@ -41,11 +41,14 @@ class Measurement:
         t = self.get_time()
 
         ## * measurements *
-        self.cpu = psutil.cpu_percent(interval=0, percpu=True)
+        self.cpu_util = psutil.cpu_percent(interval=0, percpu=True)
+        self.cpu_times = psutil.cpu_times_percent(interval=0, percpu=True)
+        self.memory = psutil.virtual_memory()
+        self.net_io = psutil.net_io_counters(pernic=True)
 
         ## timing
         t2 = time.time()
-        assert( t2-t < 0.001 )   ## XXX should be fast!!
+        assert( t2-t < 0.01 )   ## XXX should be fast!!
 
         ## store timespan for these statistics (if reasonable)
         if ( self.last_measurement ):
@@ -59,7 +62,12 @@ class Measurement:
         self.update_last_measurement(t)
 
     def __str__(self):
-        return "Timespan: " + str(self.timespan) + "; CPU: " + str(self.cpu)
+        ## •‣∘⁕∗◘☉☀★◾☞☛⦿
+        return "◘ Timespan: " + str(self.timespan) +              \
+                "\n◘ CPU utilization: " + str(self.cpu_util) +    \
+                "\n◘ CPU times: " + str(self.cpu_times) +         \
+                "\n◘ RAM: " + str(self.memory) +                  \
+                "\n◘ NET: " + str(self.net_io)
 
 
 
