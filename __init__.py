@@ -24,7 +24,8 @@ MEASUREMENT_INTERVAL = 0.2
 
 
 class Reading:
-    ## ***
+    """ A single reading of various CPU, NET, ... values. --> Building block for the »Measurement« class."""
+
     def __init__(self):
         ## * measurements *
         self.timestamp = get_time()
@@ -45,6 +46,8 @@ class Reading:
 
 
 class NetworkTraffic:
+    """ Utility class for calculating and storing network traffic: Total amount (during a timespan) and ratio. """
+
     def __init__(self, older_counters, younger_counters, timespan):
         self.total = dict()
         self.ratio = dict()
@@ -61,6 +64,8 @@ class NetworkTraffic:
 
 
 class Measurement:
+    """ Calculates and stores CPU utilization, network traffic, ... during a timespan. Based two »Readings«. """
+
     def __init__(self, reading1, reading2):
         self.r1 = reading1
         self.r2 = reading2
@@ -82,6 +87,8 @@ class Measurement:
 
 
 def measure(interval = MEASUREMENT_INTERVAL):
+    """ Convenience function to perform one »Measurement« """
+
     r1 = Reading()
     time.sleep(interval)
     r2 = Reading()
@@ -130,6 +137,8 @@ def displayX(measurement):
         print( "[" + nic + "] " + str(measurement.net_io[nic]) )
 
     print
+
+
 
 
 ## XXX TESTING
