@@ -24,12 +24,12 @@ class Measurement:
     @classmethod
     def get_time_since_last_measurement(cls):
         """ Time since last measurement in seconds (float) """
-        assert( cls.last_measurement )
-        return cls.get_time() - cls.last_measurement
+        assert( Measurement.last_measurement )
+        return Measurement.get_time() - Measurement.last_measurement
 
-    @classmethod
-    def update_last_measurement(cls, t):
-        cls.last_measurement = t
+    @staticmethod
+    def update_last_measurement(t):
+        Measurement.last_measurement = t
 
     ## Exceptions
     class TaintedResultsException(Exception):
@@ -77,10 +77,14 @@ class Measurement:
 
 
 ## TODO: debug and extend
-class NiceMeasurement(Measurement):
-    def __str__(self):
-        return ", ".join([str(x) + "%" for x in self.cpu_util])
+def display(measurement):
+    nic = "eth0"
 
+    print( ", ".join([str(x) + "%" for x in measurement.cpu_util]) )
+    print( "[" + nic + "] sent: " + str(measurement.net_io[nic].bytes_sent) +
+          ", received: " + str(measurement.net_io[nic].bytes_sent) )
+
+    print
 
 ## Take a first (invalid) reading to initialize the system.
 init_measure = Measurement()
@@ -94,7 +98,7 @@ def take_reading(interval = MEASUREMENT_INTERVAL):
     if ( t > 0 ):
         time.sleep(t)
 
-    m = NiceMeasurement()
+    m = Measurement()
     assert(m.timespan >= interval)
 
     return m
@@ -104,11 +108,10 @@ def take_reading(interval = MEASUREMENT_INTERVAL):
 def test_loop():
     for i in range(10):
         m = take_reading(0.5)
-        print( m )
-
+        display( m )
 
 
 ## XXX TESTING
-#print( take_reading() )
+test_loop()
 
 
