@@ -24,51 +24,15 @@ MEASUREMENT_INTERVAL = 0.2
 
 
 class Reading:
-    ## XXX DEPRECATED
-    last_measurement = None
-
-    @classmethod
-    def get_time_since_last_measurement(cls):
-        """ Time since last measurement in seconds (float) """
-        assert( Reading.last_measurement )
-        return Reading.get_time() - Reading.last_measurement
-
-    @staticmethod
-    def update_last_measurement(t):
-        Reading.last_measurement = t
-
-    ## XXX DEPRECATED
-    ## Exceptions
-    class TaintedResultsException(Exception):
-        pass
-
-
     ## ***
     def __init__(self):
-        ## sanity check  ## XXX DEPRECATED
-        if ( self.last_measurement ):
-            if ( get_time() - self.last_measurement < 0.09 ):
-                print( "WARN: time diff only:", get_time() - self.last_measurement )
-                raise self.TaintedResultsException
-
         ## * measurements *
         self.timestamp = get_time()
-        self.cpu_util = psutil.cpu_percent(interval=0, percpu=True)                      ## XXX
-        self.cpu_times_percent = psutil.cpu_times_percent(interval=0, percpu=True)       ## XXX
+        #self.cpu_util = psutil.cpu_percent(interval=0, percpu=True)                      ## XXX
+        #self.cpu_times_percent = psutil.cpu_times_percent(interval=0, percpu=True)       ## XXX
         self.cpu_times = psutil.cpu_times(percpu=True)
         self.memory = psutil.virtual_memory()
         self.net_io = psutil.net_io_counters(pernic=True)
-
-        ## store timespan for these statistics (if reasonable)  ## XXX DEPRECATED
-        if ( self.last_measurement ):
-            self.timespan = self.timestamp - self.last_measurement
-            self.valid = True
-        else:
-            self.timespan = None
-            self.valid = False
-
-        ## update class variable
-        self.update_last_measurement(self.timestamp)
 
     def __str__(self):
         ## •‣∘⁕∗◘☉☀★◾☞☛⦿
@@ -104,8 +68,6 @@ class Measurement:
         ## calculate differences
         self.timespan = self.r2.timestamp - self.r1.timestamp
         self.cpu_times_percent = helpers.calculate_cpu_times_percent(self.r1.cpu_times, self.r2.cpu_times, percpu=True)
-        #self.net_io_diff = helpers.calculate_element_diffs_for_dict_of_tuples(self.r1.net_io, self.r2.net_io)
-        #self.net_io_rate = self._calculate_net_io_rate()
         self.net_io = self._calculate_net_io()
 
 
@@ -117,10 +79,6 @@ class Measurement:
 
         return ret
 
-
-    #def __str__(self):
-        #return str(self.timespan) + ", " + str(self.r2.timespan)   ## XXX
-        #return str(self.cpu_times_percent) + "\n" + str(self.r2.cpu_times_percent)   ## XXX
 
 
 def measure(interval = MEASUREMENT_INTERVAL):
@@ -134,12 +92,14 @@ def measure(interval = MEASUREMENT_INTERVAL):
 
 
 
+## XXX TESTING
 def display_cpu(measurement):
     num = 1
     for cpu in measurement.cpu_times_percent:
         print( "CPU" + str(num) + " util: " + str(100-cpu.idle) + "% (" + str(cpu.user) + "% user, " + str(cpu.system) + "% system)")
         num += 1
 
+## XXX TESTING
 def desplay_network_traffic(measurement, nics = None):
     if not nics:
         nics = measurement.net_io.keys()
@@ -151,6 +111,7 @@ def desplay_network_traffic(measurement, nics = None):
               ", Receiving (bytes/s): " + str(values.ratio["packets_recv"]) )
 
 
+## XXX TESTING
 def display(measurement):
     nics = ("eth0", "wlan0")
 
@@ -158,6 +119,7 @@ def display(measurement):
     desplay_network_traffic( measurement, nics )
 
 
+## XXX TESTING
 def displayX(measurement):
     nic = "eth0"
 
@@ -168,21 +130,6 @@ def displayX(measurement):
         print( "[" + nic + "] " + str(measurement.net_io[nic]) )
 
     print
-
-
-## Takes a reading and ensures that (at least) |interval| seconds are covered.
-#    NOTE: does not handle race conditions (well)
-def take_reading(interval = MEASUREMENT_INTERVAL):
-    t = interval - Reading.get_time_since_last_measurement()
-
-    ## sleep if necessary
-    if ( t > 0 ):
-        time.sleep(t)
-
-    m = Reading()
-    assert(m.timespan >= interval)
-
-    return m
 
 
 ## XXX TESTING

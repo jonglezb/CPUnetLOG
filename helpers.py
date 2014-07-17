@@ -82,25 +82,3 @@ def calculate_cpu_times_percent(cpu_times_older, cpu_times_younger, percpu=False
             ret.append(calculate(t1, t2))
         return ret
 
-
-
-
-## TODO still used?
-def calculate_element_diff_for_tuple(older_tuple, younger_tuple):
-    r = list()
-
-    for field in older_tuple._fields:
-        field_delta = getattr(younger_tuple, field) - getattr(older_tuple, field)
-        r.append(field_delta)
-
-    tuple_type = namedtuple('diff', ' '.join(older_tuple._fields))
-    return tuple_type(*r)
-
-
-def calculate_element_diffs_for_dict_of_tuples(older_values, younger_values):
-    ret = dict()
-
-    for nic in older_values.keys():
-        ret[nic] = calculate_element_diff_for_tuple(older_values[nic], younger_values[nic])
-
-    return ret
