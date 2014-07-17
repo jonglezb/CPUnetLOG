@@ -4,6 +4,14 @@
 import psutil
 import time
 
+from collections import namedtuple
+
+import helpers
+
+def get_time():
+    """ Unified/comparable clock access """
+    return time.time()
+
 
 ## XXX for interactive debugging only
 def RELOAD():
@@ -13,24 +21,23 @@ def RELOAD():
 
 MEASUREMENT_INTERVAL = 0.2
 
-class Measurement:
-    last_measurement = None
 
-    @staticmethod
-    def get_time():
-        """ Unified/comparable clock access """
-        return time.time()
+
+class Reading:
+    ## XXX DEPRECATED
+    last_measurement = None
 
     @classmethod
     def get_time_since_last_measurement(cls):
         """ Time since last measurement in seconds (float) """
-        assert( Measurement.last_measurement )
-        return Measurement.get_time() - Measurement.last_measurement
+        assert( Reading.last_measurement )
+        return Reading.get_time() - Reading.last_measurement
 
     @staticmethod
     def update_last_measurement(t):
-        Measurement.last_measurement = t
+        Reading.last_measurement = t
 
+    ## XXX DEPRECATED
     ## Exceptions
     class TaintedResultsException(Exception):
         pass
@@ -38,34 +45,30 @@ class Measurement:
 
     ## ***
     def __init__(self):
-        ## sanity check
+        ## sanity check  ## XXX DEPRECATED
         if ( self.last_measurement ):
-            if ( self.get_time() - self.last_measurement < 0.09 ):
+            if ( get_time() - self.last_measurement < 0.09 ):
+                print( "WARN: time diff only:", get_time() - self.last_measurement )
                 raise self.TaintedResultsException
 
-        ## timing
-        t = self.get_time()
-
         ## * measurements *
-        self.cpu_util = psutil.cpu_percent(interval=0, percpu=True)
-        self.cpu_times = psutil.cpu_times_percent(interval=0, percpu=True)
+        self.timestamp = get_time()
+        self.cpu_util = psutil.cpu_percent(interval=0, percpu=True)                      ## XXX
+        self.cpu_times_percent = psutil.cpu_times_percent(interval=0, percpu=True)       ## XXX
+        self.cpu_times = psutil.cpu_times(percpu=True)
         self.memory = psutil.virtual_memory()
         self.net_io = psutil.net_io_counters(pernic=True)
 
-        ## timing
-        t2 = time.time()
-        assert( t2-t < 0.01 )   ## XXX should be fast!!
-
-        ## store timespan for these statistics (if reasonable)
+        ## store timespan for these statistics (if reasonable)  ## XXX DEPRECATED
         if ( self.last_measurement ):
-            self.timespan = t - self.last_measurement
+            self.timespan = self.timestamp - self.last_measurement
             self.valid = True
         else:
             self.timespan = None
             self.valid = False
 
         ## update class variable
-        self.update_last_measurement(t)
+        self.update_last_measurement(self.timestamp)
 
     def __str__(self):
         ## •‣∘⁕∗◘☉☀★◾☞☛⦿
@@ -76,29 +79,83 @@ class Measurement:
                 "\n◘ NET: " + str(self.net_io)
 
 
-## TODO: debug and extend
+
+class NetworkTraffic:
+    def __init__(self, older_counters, younger_counters, timespan):
+        self.total = dict()
+        self.ratio = dict()
+
+        for field in older_counters._fields:
+            field_delta = getattr(younger_counters, field) - getattr(older_counters, field)
+
+            self.total[field] = field_delta
+            self.ratio[field] = field_delta / timespan
+
+    def __str__(self):
+        return "Total (bytes):" + str(self.total) + "; Ratio (bytes/s)" + str(self.ratio)
+
+
+
+class Measurement:
+    def __init__(self, reading1, reading2):
+        self.r1 = reading1
+        self.r2 = reading2
+
+        ## calculate differences
+        self.timespan = self.r2.timestamp - self.r1.timestamp
+        self.cpu_times_percent = helpers.calculate_cpu_times_percent(self.r1.cpu_times, self.r2.cpu_times, percpu=True)
+        #self.net_io_diff = helpers.calculate_element_diffs_for_dict_of_tuples(self.r1.net_io, self.r2.net_io)
+        #self.net_io_rate = self._calculate_net_io_rate()
+        self.net_io = self._calculate_net_io()
+
+
+    def _calculate_net_io(self):
+        ret = dict()
+
+        for nic in self.r1.net_io.keys():
+            ret[nic] = NetworkTraffic(self.r1.net_io[nic], self.r2.net_io[nic], self.timespan)
+
+        return ret
+
+
+    #def __str__(self):
+        #return str(self.timespan) + ", " + str(self.r2.timespan)   ## XXX
+        #return str(self.cpu_times_percent) + "\n" + str(self.r2.cpu_times_percent)   ## XXX
+
+
+def measure(interval = MEASUREMENT_INTERVAL):
+    r1 = Reading()
+    time.sleep(interval)
+    r2 = Reading()
+
+    m = Measurement(r1, r2)
+
+    return m
+
+
+
 def display(measurement):
     nic = "eth0"
 
-    print( ", ".join([str(x) + "%" for x in measurement.cpu_util]) )
-    print( "[" + nic + "] sent: " + str(measurement.net_io[nic].bytes_sent) +
-          ", received: " + str(measurement.net_io[nic].bytes_sent) )
+    for cpu in measurement.cpu_times_percent:
+        print( ", ".join([str(x) + "%" for x in cpu]))
+        print( str(100-cpu.idle) + "%, " + str(cpu.user) + "%. " + str(cpu.system) + "%")
+    for nic in measurement.net_io.keys():
+        print( "[" + nic + "] " + str(measurement.net_io[nic]) )
 
     print
 
-## Take a first (invalid) reading to initialize the system.
-init_measure = Measurement()
 
 ## Takes a reading and ensures that (at least) |interval| seconds are covered.
 #    NOTE: does not handle race conditions (well)
 def take_reading(interval = MEASUREMENT_INTERVAL):
-    t = interval - Measurement.get_time_since_last_measurement()
+    t = interval - Reading.get_time_since_last_measurement()
 
     ## sleep if necessary
     if ( t > 0 ):
         time.sleep(t)
 
-    m = Measurement()
+    m = Reading()
     assert(m.timespan >= interval)
 
     return m
@@ -112,6 +169,6 @@ def test_loop():
 
 
 ## XXX TESTING
-test_loop()
+display( measure() )
 
 
