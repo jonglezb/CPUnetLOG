@@ -134,7 +134,31 @@ def measure(interval = MEASUREMENT_INTERVAL):
 
 
 
+def display_cpu(measurement):
+    num = 1
+    for cpu in measurement.cpu_times_percent:
+        print( "CPU" + str(num) + " util: " + str(100-cpu.idle) + "% (" + str(cpu.user) + "% user, " + str(cpu.system) + "% system)")
+        num += 1
+
+def desplay_network_traffic(measurement, nics = None):
+    if not nics:
+        nics = measurement.net_io.keys()
+
+    for nic in nics:
+        values = measurement.net_io[nic]
+
+        print( "[" + nic + "] Sending (bytes/s): " + str(values.ratio["packets_sent"]) +
+              ", Receiving (bytes/s): " + str(values.ratio["packets_recv"]) )
+
+
 def display(measurement):
+    nics = ("eth0", "wlan0")
+
+    display_cpu(measurement)
+    desplay_network_traffic( measurement, nics )
+
+
+def displayX(measurement):
     nic = "eth0"
 
     for cpu in measurement.cpu_times_percent:
@@ -164,11 +188,12 @@ def take_reading(interval = MEASUREMENT_INTERVAL):
 ## XXX TESTING
 def test_loop():
     for i in range(10):
-        m = take_reading(0.5)
-        display( m )
+        display( measure() )
+        time.sleep(0.5)
+        print
 
 
 ## XXX TESTING
-display( measure() )
-
+#display( measure() )
+test_loop()
 

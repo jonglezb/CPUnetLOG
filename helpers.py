@@ -84,6 +84,8 @@ def calculate_cpu_times_percent(cpu_times_older, cpu_times_younger, percpu=False
 
 
 
+
+## TODO still used?
 def calculate_element_diff_for_tuple(older_tuple, younger_tuple):
     r = list()
 
