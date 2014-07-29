@@ -81,4 +81,3 @@ def calculate_cpu_times_percent(cpu_times_older, cpu_times_younger, percpu=False
         for t1, t2 in zip(cpu_times_older, cpu_times_younger):
             ret.append(calculate(t1, t2))
         return ret
-

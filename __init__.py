@@ -3,10 +3,13 @@
 
 import psutil
 import time
+import sys
+import traceback
 
 from collections import namedtuple
 
 import helpers
+import curses_display as ui
 
 def get_time():
     """ Unified/comparable clock access """
@@ -127,7 +130,8 @@ def desplay_network_traffic(measurement, nics = None):
 
 ## XXX TESTING
 def display(measurement):
-    nics = ("eth0", "wlan0", "lo")
+    #nics = ("eth0", "wlan0", "lo")
+    nics = ("eth0", "wlan0")
 
     display_cpu(measurement)
     desplay_network_traffic( measurement, nics )
@@ -150,9 +154,32 @@ def displayX(measurement):
 
 ## XXX TESTING -- NOTE: takes unnecessary Readings!!
 def test_loop():
-    for i in range(100):
-        display( measure(2.0) )
+    err = None
+
+    try:
+        ui.init()
+        ui.nics = ("eth0", "wlan0")
+
+        while ui.display( measure(1.0) ):
+            pass
+
+    except KeyboardInterrupt:
+        pass
+    except Exception as e:
+        err = e
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+    finally:
+        ui.close()
+
+    ## On error: Print error message *after* curses has quit.
+    if ( err ):
+        print( "Unexpected exception happened: '" + str(err) + "'" )
         print
+
+        traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stdout)
+
+        print
+        print( "QUIT." )
 
 
 ## XXX TESTING

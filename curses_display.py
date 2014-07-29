@@ -60,15 +60,42 @@ def init():
 def display(measurement):
     global stdscr
 
+    ## Press 'q' to quit.
     pressedkey = stdscr.getch()
     if pressedkey == ord('q'):
         return False
 
+    ## Header
     stdscr.clear()
     stdscr.border(0)
     timenow = time.strftime("%H:%M:%S")
-    stdscr.addstr(1, 1, 'CPUnetLOG          Time: {0}       Interval: {1}s'.format(timenow, round(measurement.timespan, 1)), curses.A_BOLD)
+    stdscr.addstr(1, 1, 'CPUnetLOG          Time: {0}                Interval: {1}s'.format(timenow, round(measurement.timespan, 1)), curses.A_BOLD)
     stdscr.refresh()
+
+    y = 3
+
+    ## CPU ##
+    num=1
+    for cpu in measurement.cpu_times_percent:
+        stdscr.addstr(y, 1, 'CPU{0}'.format( num ), curses.color_pair(1))
+        stdscr.addstr(y, 20, 'util:', curses.color_pair(2))
+        stdscr.addstr(y, 26, '{0:.2%}'.format( (100-cpu.idle)/100.0 ), curses.color_pair(3))
+        stdscr.addstr(y, 50, 'user:', curses.color_pair(2))
+        stdscr.addstr(y, 56, '{0:.2%}'.format( cpu.user/100.0 ), curses.color_pair(3))
+        stdscr.addstr(y, 66, 'system:', curses.color_pair(2))
+        stdscr.addstr(y, 74, '{0:.2%}'.format( cpu.system/100.0 ), curses.color_pair(3))
+
+        num += 1
+        y += 1
+
+
+
+
+    ## Network ##
+
+    y += 1
+    stdscr.hline(y, 1, "-", 85)
+    y += 1
 
     # display all nics (if not set otherwise)
     if nics:
@@ -76,7 +103,6 @@ def display(measurement):
     else:
         active_nics = measurement.net_io.keys()
 
-    y=3
     sum_sending = 0
     sum_receiving = 0
 
@@ -101,9 +127,11 @@ def display(measurement):
     y+=1
     stdscr.addstr(y, 1, 'Total:', curses.color_pair(4))
     stdscr.addstr(y, 20, 'Sent:', curses.color_pair(2))
-    stdscr.addstr(y, 26, '{0} {1}/s'.format(_format_net_speed(sum_sending), unit), curses.color_pair(3) | curses.A_STANDOUT)
+    #stdscr.addstr(y, 26, '{0} {1}/s'.format(_format_net_speed(sum_sending), unit), curses.color_pair(3) | curses.A_STANDOUT)
+    stdscr.addstr(y, 26, '{0} {1}/s'.format(_format_net_speed(sum_sending), unit), curses.color_pair(3))
     stdscr.addstr(y, 50, 'Received:', curses.color_pair(2))
-    stdscr.addstr(y, 60, '{0} {1}/s'.format(_format_net_speed(sum_receiving),unit), curses.color_pair(3) | curses.A_STANDOUT)
+    #stdscr.addstr(y, 60, '{0} {1}/s'.format(_format_net_speed(sum_receiving),unit), curses.color_pair(3) | curses.A_STANDOUT)
+    stdscr.addstr(y, 60, '{0} {1}/s'.format(_format_net_speed(sum_receiving),unit), curses.color_pair(3))
 
     stdscr.refresh()
 
