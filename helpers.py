@@ -95,7 +95,7 @@ def get_nic_speeds():
     for nic in get_nics():
         try:
             with open("/sys/class/net/" + nic + "/speed", "r") as f:
-                speed = int( f.read().strip() )
+                speed = int( f.read().strip() ) * 1000 * 1000
 
             ret[nic] = speed
         except OSError:
