@@ -24,6 +24,12 @@ rounding_digits = 2
 unit = "MBits"
 
 
+## TODO ideas..
+#   - total (GB transferred)
+#   - other (CPU usage)
+
+## TODO idea: smoothing..?
+
 
 def _format_net_speed(speed):
     return str( round(speed / divisor, rounding_digits) )
