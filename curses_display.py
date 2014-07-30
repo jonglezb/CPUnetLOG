@@ -132,6 +132,13 @@ def display(measurement):
         stdscr.addstr(y, 50, 'Received:', curses.color_pair(2))
         stdscr.addstr(y, 60, '{0} {1}/s ({2:.2%})'.format(receiving,unit, receive_ratio), curses.color_pair(3))
 
+        ## XXX TESTING
+        y += 1
+        stdscr.addstr(y, 25, "|" + " "*20 + "|", curses.color_pair(2))
+        stdscr.addstr(y, 26, " " * int(send_ratio * 20), curses.color_pair(3)|curses.A_REVERSE)
+        stdscr.addstr(y, 59, "|" + " "*20 + "|", curses.color_pair(2))
+        stdscr.addstr(y, 60, " " * int(receive_ratio * 20), curses.color_pair(3)|curses.A_REVERSE)
+
         y += 1
 
     ## Total
