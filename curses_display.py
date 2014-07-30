@@ -127,17 +127,30 @@ def display(measurement):
         sum_receiving += _recv
 
         stdscr.addstr(y, 1, '{0}'.format(nic), curses.color_pair(1))
-        stdscr.addstr(y, 20, 'Sent:', curses.color_pair(2))
-        stdscr.addstr(y, 26, '{0} {1}/s ({2:.2%})'.format(sending, unit, send_ratio), curses.color_pair(3))
-        stdscr.addstr(y, 50, 'Received:', curses.color_pair(2))
-        stdscr.addstr(y, 60, '{0} {1}/s ({2:.2%})'.format(receiving,unit, receive_ratio), curses.color_pair(3))
+        stdscr.addstr(y, 20, 'Sent: |', curses.color_pair(2))
+        stdscr.addstr(y, 50, 'Received: |', curses.color_pair(2))
+        stdscr.addstr(y, 47, "|", curses.color_pair(2))
+        stdscr.addstr(y, 81, "|", curses.color_pair(2))
+
+        ## XXX prototypical "inline"-coloring
+        _snd_str = '{0} {1}/s'.format(sending, unit, send_ratio)
+        _snd_str += " " * (20-len(_snd_str))
+        _load_len = int(send_ratio * 20)
+        stdscr.addstr(y, 27, _snd_str[0:_load_len], curses.color_pair(3)|curses.A_REVERSE)
+        stdscr.addstr(y, 27+_load_len, _snd_str[_load_len:], curses.color_pair(3))
+
+        _recv_str = '{0} {1}/s'.format(receiving, unit, send_ratio)
+        _recv_str += " " * (20-len(_recv_str))
+        _load_len = int(receive_ratio * 20)
+        stdscr.addstr(y, 61, _recv_str[0:_load_len], curses.color_pair(3)|curses.A_REVERSE)
+        stdscr.addstr(y, 61+_load_len, _recv_str[_load_len:], curses.color_pair(3))
 
         ## XXX TESTING
-        y += 1
-        stdscr.addstr(y, 25, "|" + " "*20 + "|", curses.color_pair(2))
-        stdscr.addstr(y, 26, " " * int(send_ratio * 20), curses.color_pair(3)|curses.A_REVERSE)
-        stdscr.addstr(y, 59, "|" + " "*20 + "|", curses.color_pair(2))
-        stdscr.addstr(y, 60, " " * int(receive_ratio * 20), curses.color_pair(3)|curses.A_REVERSE)
+        #y += 1
+        #stdscr.addstr(y, 25, "|" + " "*20 + "|", curses.color_pair(2))
+        #stdscr.addstr(y, 26, " " * int(send_ratio * 20), curses.color_pair(3)|curses.A_REVERSE)
+        #stdscr.addstr(y, 59, "|" + " "*20 + "|", curses.color_pair(2))
+        #stdscr.addstr(y, 60, " " * int(receive_ratio * 20), curses.color_pair(3)|curses.A_REVERSE)
 
         y += 1
 
