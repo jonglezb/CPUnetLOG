@@ -1,7 +1,9 @@
+#!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 
 from collections import namedtuple
 import os
+import netifaces
 
 _ptime_cpu_perc_nt = None
 
@@ -81,3 +83,23 @@ def calculate_cpu_times_percent(cpu_times_older, cpu_times_younger, percpu=False
         for t1, t2 in zip(cpu_times_older, cpu_times_younger):
             ret.append(calculate(t1, t2))
         return ret
+
+
+
+def get_nics():
+    return netifaces.interfaces()
+
+def get_nic_speeds():
+    ret = dict()
+
+    for nic in get_nics():
+        try:
+            with open("/sys/class/net/" + nic + "/speed", "r") as f:
+                speed = int( f.read().strip() )
+
+            ret[nic] = speed
+        except OSError:
+            speed = 0
+
+    return ret
+

@@ -9,6 +9,7 @@ This code is inspired and partially copied from »bwtop« written by
 
 import curses
 import time
+import helpers
 
 ## XXX disable colors
 disablecolorskipped = True
@@ -17,6 +18,7 @@ stdscr = None
 
 ## some "constants"/preferences
 nics = None
+nic_speeds = None
 divisor = 1000
 rounding_digits = 2
 unit = "KBytes"
@@ -30,6 +32,10 @@ def _format_net_speed(speed):
 
 def init():
     global stdscr
+    global nic_speeds
+
+    if not nic_speeds:
+        nic_speeds = helpers.get_nic_speeds()
 
     stdscr = curses.initscr()
     curses.noecho()
@@ -110,16 +116,21 @@ def display(measurement):
     for nic in active_nics:
         values = measurement.net_io[nic]
 
-        sending = _format_net_speed( values.ratio["bytes_sent"] )
-        receiving = _format_net_speed( values.ratio["bytes_recv"] )
-        sum_sending += values.ratio["bytes_sent"]
-        sum_receiving += values.ratio["bytes_recv"]
+        _send = values.ratio["bytes_sent"]
+        _recv = values.ratio["bytes_recv"]
+        sending = _format_net_speed( _send )
+        send_percent = _send/nic_speeds[nic]  ##  FIXME / ??
+        receiving = _format_net_speed( _recv )
+        receive_percent = _recv/nic_speeds[nic]   ##  FIXME / ??
+
+        sum_sending += _send
+        sum_receiving += _recv
 
         stdscr.addstr(y, 1, '{0}'.format(nic), curses.color_pair(1))
         stdscr.addstr(y, 20, 'Sent:', curses.color_pair(2))
-        stdscr.addstr(y, 26, '{0} {1}/s'.format(sending, unit), curses.color_pair(3))
+        stdscr.addstr(y, 26, '{0} {1}/s ({2:.2%})'.format(sending, unit, send_percent), curses.color_pair(3))
         stdscr.addstr(y, 50, 'Received:', curses.color_pair(2))
-        stdscr.addstr(y, 60, '{0} {1}/s'.format(receiving,unit), curses.color_pair(3))
+        stdscr.addstr(y, 60, '{0} {1}/s ({2:.2%})'.format(receiving,unit, receive_percent), curses.color_pair(3))
 
         y += 1
 

@@ -24,6 +24,7 @@ def RELOAD():
 
 MEASUREMENT_INTERVAL = 0.2
 
+nic_speeds = helpers.get_nic_speeds()
 
 
 class Reading:
@@ -158,7 +159,8 @@ def test_loop():
 
     try:
         ui.init()
-        ui.nics = ("eth0", "wlan0")
+        ui.nics = nic_speeds.keys()
+        ui.nic_speeds = nic_speeds
 
         while ui.display( measure(1.0) ):
             pass
