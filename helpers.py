@@ -103,3 +103,52 @@ def get_nic_speeds():
 
     return ret
 
+
+def split_proprtionally(text, weights, size=0, fill=" "):
+    """
+    Split a string proportional to a given weight-distribution.
+
+    If a |size| is specified, that string is filled with |fill| at the end to match that length.
+    (NOTE: len(fill) must be 1)
+    """
+
+    if ( size > 0 ):
+        ## Fill text with spaces.
+        if ( len(text) < size ):
+            text += fill * (size-len(text))
+        ## Truncate text if it's too long.
+        elif ( len(text) > size ):
+            text = text[size]
+    else:
+        size = len(text)
+
+    # sum of all weights
+    total_weights = float( sum(weights) )
+
+    ## Calculate an int for each weight so that they sum appropriately to |size|.
+    weighted_lengths = [ int(round( (w / total_weights)*size )) for w in weights ]
+
+    ## XXX debugging...
+    if( sum(weighted_lengths) != size ):
+        ## TODO can this fail due to rounding issues?
+        ##          --> What do we do then? Expand smallest/shrink biggest?
+
+
+        ## XXX Hotfix..
+        if( sum(weighted_lengths)+1 == size ):
+            weighted_lengths[0] += 1
+        else:
+            print( weighted_lengths )
+
+        assert( sum(weighted_lengths) == size )
+
+
+
+    ## * split *
+    ret = list()
+    last_pos = 0
+    for pos in weighted_lengths:
+        ret.append( text[last_pos:last_pos + pos] )
+        last_pos += pos
+
+    return ret
