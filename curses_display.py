@@ -24,9 +24,9 @@ rounding_digits = 2
 unit = "MBits"
 
 ## GUI, positions of fields
-LABEL_CPU_UTIL = 17
-LABEL_CPU_USER = 47
-LABEL_CPU_SYSTEM = 63
+LABEL_CPU_UTIL = 18
+LABEL_CPU_USER = 48
+LABEL_CPU_SYSTEM = 64
 LABEL_Sent = LABEL_CPU_UTIL
 LABEL_Received = LABEL_CPU_USER
 
@@ -125,7 +125,7 @@ def display(measurement):
         # static labels
         stdscr.addstr(y, 1, 'CPU{0}'.format( num ), curses.color_pair(1))
         stdscr.addstr(y, LABEL_CPU_UTIL, 'util: ', curses.color_pair(2))
-        stdscr.addstr(y, LABEL_CPU_UTIL+27, '|', curses.color_pair(2))
+        stdscr.addstr(y, LABEL_CPU_UTIL+26, '|', curses.color_pair(2))
         stdscr.addstr(y, LABEL_CPU_USER, 'user: ', curses.color_pair(2))
         stdscr.addstr(y, LABEL_CPU_SYSTEM, 'system: ', curses.color_pair(2))
 
@@ -173,9 +173,9 @@ def display(measurement):
 
         stdscr.addstr(y, 1, '{0}'.format(nic), curses.color_pair(1))
         stdscr.addstr(y, LABEL_Sent, 'Sent: ', curses.color_pair(2))
-        stdscr.addstr(y, LABEL_Sent+27, "|", curses.color_pair(2))
+        stdscr.addstr(y, LABEL_Sent+26, "|", curses.color_pair(2))
         stdscr.addstr(y, LABEL_Received, 'Received: ', curses.color_pair(2))
-        stdscr.addstr(y, LABEL_Received+31, "|", curses.color_pair(2))
+        stdscr.addstr(y, LABEL_Received+30, "|", curses.color_pair(2))
 
         ## TODO rewrite in nice ^^
         ## XXX prototypical "inline"-coloring
