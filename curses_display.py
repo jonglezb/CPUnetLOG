@@ -23,7 +23,6 @@ divisor = 1000000.0
 rounding_digits = 2
 unit = "MBits"
 
-
 ## TODO ideas..
 #   - total (GB transferred)
 #   - other (CPU usage)
@@ -33,6 +32,29 @@ unit = "MBits"
 
 def _format_net_speed(speed):
     return str( round(speed / divisor, rounding_digits) )
+
+
+def _display_cpu_bar(y, x, cpu):
+    # Constants
+    CPU_BAR_COLORS = ( curses.color_pair(3) | curses.A_REVERSE,    # user
+                       curses.color_pair(4) | curses.A_REVERSE,    # system
+                       curses.color_pair(5) | curses.A_REVERSE,    # other
+                       curses.color_pair(3) )                      # idle
+
+    # Calculate proportions
+    cpu_util = 100-cpu.idle
+    other = 100 - sum( (cpu.user, cpu.system, cpu.idle) )
+    proportions = [cpu.user, cpu.system, other, cpu.idle]
+
+    # Prepare text.
+    text = '{0:.2%}'.format((cpu_util)/100.0)
+    split_text = helpers.split_proprtionally(text, proportions, 20)
+
+    # Write text on screen (curses).
+    stdscr.move(y,x)
+    for s, options in zip(split_text, CPU_BAR_COLORS):
+        stdscr.addstr(s, options)
+
 
 
 
@@ -58,10 +80,12 @@ def init():
         curses.init_pair(3, -1, -1)
         curses.init_pair(4, -1, -1)
     else:
-        curses.init_pair(1, curses.COLOR_MAGENTA, -1)
-        curses.init_pair(2, curses.COLOR_BLUE, -1)
-        curses.init_pair(3, curses.COLOR_GREEN, -1)
-        curses.init_pair(4, curses.COLOR_YELLOW, -1)
+        curses.init_pair(1, curses.COLOR_MAGENTA, -1)         # "CPUX", "ethX"
+        curses.init_pair(2, curses.COLOR_BLUE, -1)            # "util", "sent", "received", ...
+        curses.init_pair(3, curses.COLOR_GREEN, -1)           # <values>
+        curses.init_pair(4, curses.COLOR_YELLOW, -1)          # "Total", (<cpu-system> ?)
+        curses.init_pair(5, curses.COLOR_CYAN, -1)            # <cpu-system> / <cpu-other>
+        curses.init_pair(6, curses.COLOR_WHITE, -1)           # <cpu-system> / <cpu-other>
 
     ## Show some output to avoid upsetting the user
     stdscr.addstr(3, 3, "loading ...", curses.A_BOLD)
@@ -89,12 +113,17 @@ def display(measurement):
     ## CPU ##
     num=1
     for cpu in measurement.cpu_times_percent:
+        # static labels
         stdscr.addstr(y, 1, 'CPU{0}'.format( num ), curses.color_pair(1))
         stdscr.addstr(y, 20, 'util:', curses.color_pair(2))
-        stdscr.addstr(y, 26, '{0:.2%}'.format( (100-cpu.idle)/100.0 ), curses.color_pair(3))
         stdscr.addstr(y, 50, 'user:', curses.color_pair(2))
-        stdscr.addstr(y, 56, '{0:.2%}'.format( cpu.user/100.0 ), curses.color_pair(3))
         stdscr.addstr(y, 66, 'system:', curses.color_pair(2))
+
+        # CPU bar
+        _display_cpu_bar( y, 26, cpu )
+
+        # user/system
+        stdscr.addstr(y, 56, '{0:.2%}'.format( cpu.user/100.0 ), curses.color_pair(3))
         stdscr.addstr(y, 74, '{0:.2%}'.format( cpu.system/100.0 ), curses.color_pair(3))
 
         num += 1
