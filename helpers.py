@@ -126,21 +126,32 @@ def split_proprtionally(text, weights, size=0, fill=" "):
     total_weights = float( sum(weights) )
 
     ## Calculate an int for each weight so that they sum appropriately to |size|.
-    weighted_lengths = [ int(round( (w / total_weights)*size )) for w in weights ]
+    float_lengths = [ (w / total_weights)*size for w in weights ]
+    weighted_lengths = [ int(round( f )) for f in float_lengths ]
 
-    ## XXX debugging...
-    if( sum(weighted_lengths) != size ):
-        ## TODO can this fail due to rounding issues?
-        ##          --> What do we do then? Expand smallest/shrink biggest?
+    ## Compensate rounding-related inconsistencies.
+        # XXX I hope this actually does what's supposed to do...
+        # (Increase/decrease the fields with the biggest rounding differences in order to fit the size)
+    diff = size - sum(weighted_lengths)
+    while( diff != 0 ):
+        sign = -1 if diff < 0 else 1
 
+        ## Calculate index where the rounding produced the biggest difference.
+        #    (On equality, the latter one wins.)
+        max_diff = 0
+        index_of_max_diff = None
+        for i in range( len(weighted_lengths) ):
+            cur_diff = ( float_lengths[i] - weighted_lengths[i] ) * sign
 
-        ## XXX Hotfix..
-        if( sum(weighted_lengths)+1 == size ):
-            weighted_lengths[0] += 1
-        else:
-            print( weighted_lengths )
+            if ( cur_diff >= max_diff ):
+                max_diff = cur_diff
+                index_of_max_diff = i
 
-        assert( sum(weighted_lengths) == size )
+        ## Increase the just found index by 1.
+        weighted_lengths[i] += sign
+        diff -= sign
+
+    assert( sum(weighted_lengths) == size )
 
 
 

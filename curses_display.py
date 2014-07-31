@@ -116,6 +116,7 @@ def display(measurement):
         # static labels
         stdscr.addstr(y, 1, 'CPU{0}'.format( num ), curses.color_pair(1))
         stdscr.addstr(y, 20, 'util:', curses.color_pair(2))
+        stdscr.addstr(y, 46, '|', curses.color_pair(2))
         stdscr.addstr(y, 50, 'user:', curses.color_pair(2))
         stdscr.addstr(y, 66, 'system:', curses.color_pair(2))
 
