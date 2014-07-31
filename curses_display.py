@@ -23,6 +23,13 @@ divisor = 1000000.0
 rounding_digits = 2
 unit = "MBits"
 
+## GUI, positions of fields
+LABEL_CPU_UTIL = 17
+LABEL_CPU_USER = 47
+LABEL_CPU_SYSTEM = 63
+LABEL_Sent = LABEL_CPU_UTIL
+LABEL_Received = LABEL_CPU_USER
+
 ## TODO ideas..
 #   - total (GB transferred)
 #   - other (CPU usage)
@@ -105,7 +112,9 @@ def display(measurement):
     stdscr.clear()
     stdscr.border(0)
     timenow = time.strftime("%H:%M:%S")
-    stdscr.addstr(1, 1, 'CPUnetLOG          Time: {0}                Interval: {1}s'.format(timenow, round(measurement.timespan, 1)), curses.A_BOLD)
+    stdscr.addstr(1, 1, 'CPUnetLOG', curses.A_BOLD)
+    stdscr.addstr(1, LABEL_Sent, 'Time: {}'.format(timenow,), curses.A_BOLD)
+    stdscr.addstr(1, LABEL_Received, 'Interval: {}s'.format(round(measurement.timespan, 1)), curses.A_BOLD)
     stdscr.refresh()
 
     y = 3
@@ -115,17 +124,17 @@ def display(measurement):
     for cpu in measurement.cpu_times_percent:
         # static labels
         stdscr.addstr(y, 1, 'CPU{0}'.format( num ), curses.color_pair(1))
-        stdscr.addstr(y, 20, 'util:', curses.color_pair(2))
-        stdscr.addstr(y, 46, '|', curses.color_pair(2))
-        stdscr.addstr(y, 50, 'user:', curses.color_pair(2))
-        stdscr.addstr(y, 66, 'system:', curses.color_pair(2))
+        stdscr.addstr(y, LABEL_CPU_UTIL, 'util: ', curses.color_pair(2))
+        stdscr.addstr(y, LABEL_CPU_UTIL+27, '|', curses.color_pair(2))
+        stdscr.addstr(y, LABEL_CPU_USER, 'user: ', curses.color_pair(2))
+        stdscr.addstr(y, LABEL_CPU_SYSTEM, 'system: ', curses.color_pair(2))
 
         # CPU bar
-        _display_cpu_bar( y, 26, cpu )
+        _display_cpu_bar( y, LABEL_CPU_UTIL+6, cpu )
 
         # user/system
-        stdscr.addstr(y, 56, '{0:.2%}'.format( cpu.user/100.0 ), curses.color_pair(3))
-        stdscr.addstr(y, 74, '{0:.2%}'.format( cpu.system/100.0 ), curses.color_pair(3))
+        stdscr.addstr(y, LABEL_CPU_USER+6, '{0:.2%}'.format( cpu.user/100.0 ), curses.color_pair(3))
+        stdscr.addstr(y, LABEL_CPU_SYSTEM+8, '{0:.2%}'.format( cpu.system/100.0 ), curses.color_pair(3))
 
         num += 1
         y += 1
@@ -136,7 +145,7 @@ def display(measurement):
     ## Network ##
 
     y += 1
-    stdscr.hline(y, 1, "-", 85)
+    stdscr.hline(y, 1, "-", 78)
     y += 1
 
     # display all nics (if not set otherwise)
@@ -163,23 +172,24 @@ def display(measurement):
         sum_receiving += _recv
 
         stdscr.addstr(y, 1, '{0}'.format(nic), curses.color_pair(1))
-        stdscr.addstr(y, 20, 'Sent: |', curses.color_pair(2))
-        stdscr.addstr(y, 50, 'Received: |', curses.color_pair(2))
-        stdscr.addstr(y, 47, "|", curses.color_pair(2))
-        stdscr.addstr(y, 81, "|", curses.color_pair(2))
+        stdscr.addstr(y, LABEL_Sent, 'Sent: ', curses.color_pair(2))
+        stdscr.addstr(y, LABEL_Sent+27, "|", curses.color_pair(2))
+        stdscr.addstr(y, LABEL_Received, 'Received: ', curses.color_pair(2))
+        stdscr.addstr(y, LABEL_Received+31, "|", curses.color_pair(2))
 
+        ## TODO rewrite in nice ^^
         ## XXX prototypical "inline"-coloring
         _snd_str = '{0} {1}/s'.format(sending, unit, send_ratio)
         _snd_str += " " * (20-len(_snd_str))
         _load_len = int(send_ratio * 20)
-        stdscr.addstr(y, 27, _snd_str[0:_load_len], curses.color_pair(3)|curses.A_REVERSE)
-        stdscr.addstr(y, 27+_load_len, _snd_str[_load_len:], curses.color_pair(3))
+        stdscr.addstr(y, LABEL_Sent+6, _snd_str[0:_load_len], curses.color_pair(3)|curses.A_REVERSE)
+        stdscr.addstr(y, LABEL_Sent+6+_load_len, _snd_str[_load_len:], curses.color_pair(3))
 
         _recv_str = '{0} {1}/s'.format(receiving, unit, send_ratio)
         _recv_str += " " * (20-len(_recv_str))
         _load_len = int(receive_ratio * 20)
-        stdscr.addstr(y, 61, _recv_str[0:_load_len], curses.color_pair(3)|curses.A_REVERSE)
-        stdscr.addstr(y, 61+_load_len, _recv_str[_load_len:], curses.color_pair(3))
+        stdscr.addstr(y, LABEL_Received+10, _recv_str[0:_load_len], curses.color_pair(3)|curses.A_REVERSE)
+        stdscr.addstr(y, LABEL_Received+10+_load_len, _recv_str[_load_len:], curses.color_pair(3))
 
         ## XXX TESTING
         #y += 1
@@ -193,12 +203,10 @@ def display(measurement):
     ## Total
     y+=1
     stdscr.addstr(y, 1, 'Total:', curses.color_pair(4))
-    stdscr.addstr(y, 20, 'Sent:', curses.color_pair(2))
-    #stdscr.addstr(y, 26, '{0} {1}/s'.format(_format_net_speed(sum_sending), unit), curses.color_pair(3) | curses.A_STANDOUT)
-    stdscr.addstr(y, 26, '{0} {1}/s'.format(_format_net_speed(sum_sending), unit), curses.color_pair(3))
-    stdscr.addstr(y, 50, 'Received:', curses.color_pair(2))
-    #stdscr.addstr(y, 60, '{0} {1}/s'.format(_format_net_speed(sum_receiving),unit), curses.color_pair(3) | curses.A_STANDOUT)
-    stdscr.addstr(y, 60, '{0} {1}/s'.format(_format_net_speed(sum_receiving),unit), curses.color_pair(3))
+    stdscr.addstr(y, LABEL_Sent, 'Sent:', curses.color_pair(2))
+    stdscr.addstr(y, LABEL_Sent+6, '{0} {1}/s'.format(_format_net_speed(sum_sending), unit), curses.color_pair(3))
+    stdscr.addstr(y, LABEL_Received, 'Received:', curses.color_pair(2))
+    stdscr.addstr(y, LABEL_Received+10, '{0} {1}/s'.format(_format_net_speed(sum_receiving),unit), curses.color_pair(3))
 
     stdscr.refresh()
 
