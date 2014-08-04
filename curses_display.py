@@ -37,6 +37,8 @@ LABEL_Received = LABEL_CPU_USER
 #
 #   - total (GB transferred)
 #   - other (CPU usage)
+#   - "Total" field for CPU usage (as well)
+#   - Also draw a bar for the totals?
 
 ## TODO idea: smoothing..?
 
