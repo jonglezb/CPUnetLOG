@@ -104,24 +104,53 @@ def measure(interval = MEASUREMENT_INTERVAL):
 
 
 
-## XXX TESTING -- NOTE: takes unnecessary Readings!!
-def test_loop():
+def main_loop():
+    """ Main Loop:
+      - Sets up curses-display
+      - Takes a reading every second
+      - Displays the measurements
+      - TODO Logging
+    """
+
     err = None
 
     try:
-        ui.init()
+        # Set up (curses) UI.
         ui.nics = nic_speeds.keys()
         ui.nic_speeds = nic_speeds
+        ui.init()
 
-        while ui.display( measure(1.0) ):
-            pass
+        # Take an initial reading.
+        old_reading = Reading()
+
+        running = True
+        while running:
+            time.sleep(1)
+                ## XXX We could calculating the remaining waiting-time here.
+                #    (But I assume the difference is negligible.)
+
+            # Take a new reading.
+            new_reading = Reading()
+
+            # Calculate the measurement from the last two readings.
+            measurement = Measurement(old_reading, new_reading)
+
+            # Display the measurement.
+            running = ui.display( measurement )
+
+            # Store the last reading as |old_reading|.
+            old_reading = new_reading
+
 
     except KeyboardInterrupt:
+        # Quit gracefully on Ctrl-C
         pass
     except Exception as e:
+        # On error: Store stack trace for later processing.
         err = e
         exc_type, exc_value, exc_traceback = sys.exc_info()
     finally:
+        # Tear down the UI.
         ui.close()
 
     ## On error: Print error message *after* curses has quit.
@@ -135,7 +164,6 @@ def test_loop():
         print( "QUIT." )
 
 
-## XXX TESTING
-#display( measure() )
-test_loop()
+## --> Run the main loop
+main_loop()
 
