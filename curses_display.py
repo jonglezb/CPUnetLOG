@@ -31,10 +31,15 @@ LABEL_Sent = LABEL_CPU_UTIL
 LABEL_Received = LABEL_CPU_USER
 
 ## TODO ideas..
+#   - Add an option to set a fixed max. net-speed manually (for comparison)
+#       --> Maybe change colors, when speed higher than this max
+#           (and switch to a scale with the real max. value for the nic.)
+#
 #   - total (GB transferred)
 #   - other (CPU usage)
 
 ## TODO idea: smoothing..?
+
 
 
 def _format_net_speed(speed):
@@ -177,7 +182,7 @@ def display(measurement):
         stdscr.addstr(y, LABEL_Received, 'Received: ', curses.color_pair(2))
         stdscr.addstr(y, LABEL_Received+30, "|", curses.color_pair(2))
 
-        ## TODO rewrite in nice ^^
+        ## TODO rewrite in nice ^^ [see _display_cpu_bar()]
         ## XXX prototypical "inline"-coloring
         _snd_str = '{0} {1}/s'.format(sending, unit, send_ratio)
         _snd_str += " " * (20-len(_snd_str))
