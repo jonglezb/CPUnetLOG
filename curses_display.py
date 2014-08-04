@@ -36,7 +36,7 @@ LABEL_Received = LABEL_CPU_USER
 #           (and switch to a scale with the real max. value for the nic.)
 #
 #   - total (GB transferred)
-#   - other (CPU usage)
+#   - other (CPU usage)  -- maybe compacter design for user/sys/other
 #   - "Total" field for CPU usage (as well)
 #   - Also draw a bar for the totals?
 
