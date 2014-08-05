@@ -165,7 +165,7 @@ def display(measurement):
     sum_receiving = 0
 
     ## display the values
-    for nic in active_nics:
+    for nic in sorted(active_nics):
         values = measurement.net_io[nic]
 
         _send = values.ratio["bytes_sent"] * 8  # Bits/s
