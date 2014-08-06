@@ -5,6 +5,7 @@ import psutil
 import time
 import sys
 import traceback
+import math
 
 from collections import namedtuple
 
@@ -123,12 +124,12 @@ def main_loop():
         # Take an initial reading.
         old_reading = Reading()
 
+        # Sleep till the next "full" second begins. (In order to roughly synchronize with other instances.)
+        now = time.time()
+        time.sleep(math.ceil(now)-now)
+
         running = True
         while running:
-            time.sleep(1)
-                ## XXX We could calculating the remaining waiting-time here.
-                #    (But I assume the difference is negligible.)
-
             # Take a new reading.
             new_reading = Reading()
 
@@ -140,6 +141,10 @@ def main_loop():
 
             # Store the last reading as |old_reading|.
             old_reading = new_reading
+
+            time.sleep(1)
+                ## XXX We could calculating the remaining waiting-time here.
+                #    (But I assume the difference is negligible.)
 
 
     except KeyboardInterrupt:
