@@ -82,13 +82,19 @@ top["General"] = general
 
 
 class MeasurementLogger:
+    """
+    Logs the given »Measurements« (derived from two »Readings«) into a JSON-header CSV-body file.
+    """
+
+    ## Initialization ##
     def __init__(self, begin, num_cpus, nics, comment, filename):
         ## Attributes
         self.num_cpus = num_cpus
         self.nics = nics
         self.filename = filename
 
-        self.classes = ("Time", "CPU", "NIC")
+        ##
+        self.class_names = ("Time", "CPU", "NIC")
         self.log_functions = dict()
         self.log_functions["Time"] = self._log_time
         self.log_functions["CPU"] = self._log_cpus
@@ -97,34 +103,65 @@ class MeasurementLogger:
 
         ## General
         self.general = dict()
-        self.general["Classes"] = self.classes
+        self.general["Classes"] = self.class_names
         self.general["Type"] = "CPUnetLOG:MeasurementLog"
         self.general["Comment"] = comment
         self.general["Begin"] = begin
-        self.general["End"] = 0
-        self.general["Duration"] = 0
+        self.general["End"] = 0        ## TODO
+        self.general["Duration"] = 0   ## TODO
 
-        ## Classes
+
+        ## Class definitions
+        self.class_defs = dict()
 
         # set up "CPU" class
         cpu = LoggingClass( name        = "CPU",
                             fields      = ("usr", "system", "softirq", "other", "idle"),
                             siblings    = [ "CPU" + str(i) for i in range(1,num_cpus) ],
                             description = "CPU utilization in percent" )
+        self.class_defs["CPU"] = cpu
 
         # set up "NIC" class
         nic = LoggingClass( name        = "NIC",
                             fields      = ("send", "receive"),
                             siblings    = nics,
                             description = "Network traffic (Bits/s)" )
+        self.class_defs["NIC"] = nic
 
         # set up "Time" class
         time = LoggingClass( name        = "Time",
                              fields      = ("begin", "end", "duration"),
                              siblings    = None,
                              description = "Begin, end, and duration (in seconds) of this measurement." )
+        self.class_defs["Time"] = time
 
 
+        ## XXX
+        self._write_json_header()
+
+
+
+    def _write_json_header(self):
+        top = dict()
+        class_definitions = dict()
+
+        ## General
+        top["General"] = self.general
+
+        ## Class definitions
+        for c in self.class_defs.values():
+            class_definitions[c.name] = c.values
+        top["ClassDefinitions"] = class_definitions
+
+        pretty_json = json.dumps(top, sort_keys=True, indent=4)
+
+        ## XXX
+        print( pretty_json )
+
+
+
+
+    ## Logging functions ##
 
     def _log_time(self, measurement, log_line):
         ## TODO format?
@@ -152,12 +189,15 @@ class MeasurementLogger:
         log_line = list()
 
         ## Call the specific log-function for each class (in the proper order).
-        for c in self.classes:
+        for c in self.class_names:
             self.log_functions[c](measurement, log_line)
 
         ## XXX
         print( log_line )
 
+
+
+    ## Close ##
 
     def close(self):
         pass
