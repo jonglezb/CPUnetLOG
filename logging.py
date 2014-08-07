@@ -116,6 +116,14 @@ class MeasurementLogger:
         self.log_functions["NIC"] = self._log_nics
 
 
+        ## Initialize file writer.
+        self.writer = CNLFileWriter("/tmp/mario1.cnl")  ## XXX
+
+        # Write header.
+        self.writer.write_header(self.json_header)
+        self.writer.write_vector(self.csv_header)
+
+
 
     def _init_class_definitions(self, num_cpus, nics):
         class_defs = dict()
@@ -200,42 +208,98 @@ class MeasurementLogger:
 
     ## Logging functions ##
 
-    def _log_time(self, measurement, log_line):
+    def _log_time(self, measurement, out_vector):
         ## TODO format?
-        log_line.extend( [measurement.r1.timestamp, measurement.r2.timestamp, measurement.timespan] )
+        out_vector.extend( [measurement.r1.timestamp, measurement.r2.timestamp, measurement.timespan] )
 
 
-    def _log_cpus(self, measurement, log_line):
+    def _log_cpus(self, measurement, out_vector):
         for cpu in measurement.cpu_times_percent:
             #cpu_util = 100-cpu.idle
             other = 100 - sum( (cpu.user, cpu.system, cpu.softirq, cpu.idle) )
 
-            log_line.extend( [cpu.user, cpu.system, cpu.softirq, other, cpu.idle] )
+            out_vector.extend( [cpu.user, cpu.system, cpu.softirq, other, cpu.idle] )
 
 
-    def _log_nics(self, measurement, log_line):
+    def _log_nics(self, measurement, out_vector):
         for nic in self.nics:
             values = measurement.net_io[nic]
 
-            log_line.extend( [values.ratio["bytes_sent"] * 8,    # Bits/s
+            out_vector.extend( [values.ratio["bytes_sent"] * 8,    # Bits/s
                               values.ratio["bytes_recv"] * 8] )  # Bits/s
 
 
 
     def log(self, measurement):
-        log_line = list()
+        out_vector = list()
 
         ## Call the specific log-function for each class (in the proper order).
         for c in self.class_names:
-            self.log_functions[c](measurement, log_line)
+            self.log_functions[c](measurement, out_vector)
 
         ## XXX
-        print( log_line )
+        print( out_vector )
+
+        self.writer.write_vector( out_vector )
 
 
 
     ## Close ##
 
     def close(self):
-        ## TODO
-        pass
+        self.writer.close()
+
+
+
+
+class CNLFileWriter:
+
+    def __init__(self, filename):
+        self.filename = filename
+
+        self.file = None
+        self.header_written = False
+
+        self._open_file()
+
+
+    def _write(self, line):
+        self.file.write(line)
+
+    def _writeln(self):
+        self.file.write("\n")
+
+
+    def _open_file(self):
+        self.file = open(self.filename, "w")
+        self._write("%% CPUnetLOGv1\n")
+
+    def write_header(self, header_dict):
+        pretty_json = json.dumps(header_dict, sort_keys=True, indent=4)
+
+        self._write( "%% Begin_Header\n" )
+        self._write( pretty_json )
+        self._writeln()
+        self._write( "%% End_Header\n" )
+        self._writeln()
+        self._write( "%% Begin_Body\n" )
+
+        self.header_written = True
+
+
+    #def write_line(self, line):
+        #self._write( line + "\n" )
+
+    def write_vector(self, out_vector):
+        line = ", ".join( map(str, out_vector) ) + "\n"
+
+        self._write( line )
+
+
+    def close(self):
+        if ( self.header_written ):
+            self._write( "%% End_Body\n" )
+
+        if ( self.file ):
+            self._writeln()
+            self.file.close()
