@@ -185,6 +185,17 @@ class MeasurementLogger:
 
 
 class CNLFileWriter:
+    """
+    This class produces files in the »CNL« format.
+
+    Usage:
+      - Constructor( filename )
+      - write_header( »Dictionary that gets converted into JSON.« )
+      - write_vector( »Vector specifying the CSV-header« )
+      - Loop:
+          - write_vector( »Vector holding one line of data.« )
+      - close()
+    """
 
     def __init__(self, filename):
         self.filename = filename
