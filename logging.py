@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 
 import json
+import time
+import os
 
 class LoggingClass:
     def __init__(self, name, fields, siblings, description):
@@ -20,7 +22,7 @@ class MeasurementLogger:
 
     ## Initialization ##
 
-    def __init__(self, begin, num_cpus, nics, comment, filename):
+    def __init__(self, num_cpus, nics, comment, filename):
         ## Attributes
         self.num_cpus = num_cpus
         self.nics = nics
@@ -49,7 +51,7 @@ class MeasurementLogger:
 
 
         ## Initialize file writer.
-        self.writer = CNLFileWriter("/tmp/mario1.cnl")  ## XXX
+        self.writer = CNLFileWriter(filename)
 
         # Write header.
         self.writer.write_header(self.json_header)
@@ -106,9 +108,6 @@ class MeasurementLogger:
 
         pretty_json = json.dumps(top_level, sort_keys=True, indent=4)
 
-        ## XXX
-        print( pretty_json )
-
         return top_level
 
 
@@ -129,9 +128,6 @@ class MeasurementLogger:
             else:
                 for field in _class["Fields"]:
                     csv_header.append( field )
-
-        ## XXX
-        print( ", ".join(csv_header) )
 
         return csv_header
 
@@ -168,9 +164,6 @@ class MeasurementLogger:
         ## Call the specific log-function for each class (in the proper order).
         for c in self.class_names:
             self.log_functions[c](measurement, out_vector)
-
-        ## XXX
-        print( out_vector )
 
         self.writer.write_vector( out_vector )
 
@@ -246,3 +239,45 @@ class CNLFileWriter:
         if ( self.file ):
             self._writeln()
             self.file.close()
+
+
+
+
+class LoggingManager:
+    def __init__(self, num_cpus, nics, comment, path):
+        self.num_cpus = num_cpus
+        self.nics = nics
+        self.comment = comment
+        self.path = path
+
+        if ( path and not os.path.exists(path) ):
+            os.makedirs(path)
+
+        self.measurement_logger_enabled = False
+
+
+    def enable_measurement_logger(self):
+        # Create filename from date.
+        date = time.strftime("%Y-%m-%d_%H:%M:%S", time.localtime())
+        filename = self.path + "/" + date + ".cnl"
+
+        # Make sure the filename is unique.
+        i = 0
+        while ( os.path.exists(filename) ):
+            filename = self.path + "/" + date + "-" + str(i) + ".cnl"
+
+        # Create Logger.
+        self.measurement_logger = MeasurementLogger(self.num_cpus, self.nics, self.comment, filename)
+
+        self.measurement_logger_enabled = True
+
+
+    def log(self, measurement):
+        if ( self.measurement_logger_enabled ):
+            self.measurement_logger.log(measurement)
+
+
+    def close(self):
+        if ( self.measurement_logger_enabled ):
+            self.measurement_logger.close()
+
