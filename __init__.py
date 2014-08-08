@@ -11,6 +11,8 @@ from collections import namedtuple
 
 import helpers
 import curses_display as ui
+from logging import LoggingManager
+
 
 def get_time():
     """ Unified/comparable clock access """
@@ -26,6 +28,7 @@ def RELOAD():
 MEASUREMENT_INTERVAL = 0.2
 
 nic_speeds = helpers.get_nic_speeds()
+nics = list( nic_speeds.keys() )
 
 
 class Reading:
@@ -110,14 +113,14 @@ def main_loop():
       - Sets up curses-display
       - Takes a reading every second
       - Displays the measurements
-      - TODO Logging
+      - Logs the measurements with the LoggingManager
     """
 
     err = None
 
     try:
         # Set up (curses) UI.
-        ui.nics = nic_speeds.keys()
+        ui.nics = nics
         ui.nic_speeds = nic_speeds
         ui.init()
 
@@ -138,6 +141,7 @@ def main_loop():
 
             # Display the measurement.
             running = ui.display( measurement )
+            logging_manager.log(measurement)
 
             # Store the last reading as |old_reading|.
             old_reading = new_reading
@@ -157,6 +161,7 @@ def main_loop():
     finally:
         # Tear down the UI.
         ui.close()
+        logging_manager.close()
 
     ## On error: Print error message *after* curses has quit.
     if ( err ):
@@ -169,6 +174,26 @@ def main_loop():
         print( "QUIT." )
 
 
-## --> Run the main loop
-main_loop()
+
+
+## MAIN ##
+if __name__ == "__main__":
+
+    ## Command line arguments
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--logging", help="Enables logging.",
+                        action="store_true")
+    args = parser.parse_args()
+
+
+    ## Logging
+    logging_manager = LoggingManager( psutil.NUM_CPUS, nics, None, "/tmp/cpunetlog/" )    ## TODO path...
+    if args.logging:
+        logging_manager.enable_measurement_logger()
+
+
+    # Run the main loop.
+    main_loop()
 
