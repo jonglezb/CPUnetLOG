@@ -65,7 +65,7 @@ class MeasurementLogger:
         # set up "CPU" class
         cpu = LoggingClass( name        = "CPU",
                             fields      = ("usr", "system", "softirq", "other", "idle"),
-                            siblings    = [ "CPU" + str(i) for i in range(1,num_cpus) ],
+                            siblings    = [ "CPU" + str(i) for i in range(1,num_cpus+1) ],
                             description = "CPU utilization in percent" )
         class_defs["CPU"] = cpu
 
