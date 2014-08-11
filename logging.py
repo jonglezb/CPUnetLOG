@@ -64,8 +64,8 @@ class MeasurementLogger:
 
         # set up "CPU" class
         cpu = LoggingClass( name        = "CPU",
-                            fields      = ("usr", "system", "softirq", "other", "idle"),
-                            siblings    = [ "CPU" + str(i) for i in range(1,num_cpus+1) ],
+                            fields      = ("util", "idle", "usr", "system", "softirq", "other"),
+                            siblings    = [ "CPU" + str(i) for i in range(0,num_cpus) ],
                             description = "CPU utilization in percent" )
         class_defs["CPU"] = cpu
 
@@ -143,10 +143,10 @@ class MeasurementLogger:
 
     def _log_cpus(self, measurement, out_vector):
         for cpu in measurement.cpu_times_percent:
-            #cpu_util = 100-cpu.idle
+            cpu_util = 100-cpu.idle
             other = 100 - sum( (cpu.user, cpu.system, cpu.softirq, cpu.idle) )
 
-            out_vector.extend( [cpu.user, cpu.system, cpu.softirq, other, cpu.idle] )
+            out_vector.extend( [cpu_util, cpu.idle, cpu.user, cpu.system, cpu.softirq, other] )
 
 
     def _log_nics(self, measurement, out_vector):
