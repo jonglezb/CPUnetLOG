@@ -22,7 +22,7 @@ class MeasurementLogger:
 
     ## Initialization ##
 
-    def __init__(self, num_cpus, nics, comment, filename):
+    def __init__(self, num_cpus, nics, begin, hostname, comment, filename):
         ## Attributes
         self.num_cpus = num_cpus
         self.nics = nics
@@ -38,6 +38,8 @@ class MeasurementLogger:
         self.json_header = self._create_json_header(self.class_names,
                                                     self.class_defs.values(),
                                                     self.type_string,
+                                                    begin,
+                                                    hostname,
                                                     comment)
 
         self.csv_header = self._create_csv_header(self.json_header)
@@ -87,7 +89,7 @@ class MeasurementLogger:
 
 
     ## TODO Move this outside the class?
-    def _create_json_header(self, class_names, class_defs, type, comment):
+    def _create_json_header(self, class_names, class_defs, type, begin, hostname, comment):
         top_level = dict()
         general = dict()
         class_definitions = dict()
@@ -96,7 +98,8 @@ class MeasurementLogger:
         general["Classes"] = class_names
         general["Type"] = type
         general["Comment"] = comment
-        #general["Begin"] = begin
+        general["Date"] = begin
+        general["Hostname"] = hostname
         #general["End"] = 0        ## TODO ... can't be written at the beginning of the file!!
         #general["Duration"] = 0   ## TODO
         top_level["General"] = general
@@ -137,7 +140,6 @@ class MeasurementLogger:
     ## Logging functions ##
 
     def _log_time(self, measurement, out_vector):
-        ## TODO format?
         out_vector.extend( [measurement.r1.timestamp, measurement.r2.timestamp, measurement.timespan] )
 
 
@@ -244,11 +246,12 @@ class CNLFileWriter:
 
 
 class LoggingManager:
-    def __init__(self, num_cpus, nics, comment, path):
+    def __init__(self, num_cpus, nics, hostname, comment, path):
         self.num_cpus = num_cpus
         self.nics = nics
         self.comment = comment
         self.path = path
+        self.hostname = hostname
 
         if ( path and not os.path.exists(path) ):
             os.makedirs(path)
@@ -258,16 +261,21 @@ class LoggingManager:
 
     def enable_measurement_logger(self):
         # Create filename from date.
-        date = time.strftime("%Y-%m-%d_%H:%M:%S", time.localtime())
-        filename = self.path + "/" + date + ".cnl"
+        t = time.time()
+        date = time.strftime("%Y-%m-%d_%H:%M:%S", time.localtime(t))
+        filename_prefix = self.path + "/" + date + "-" + self.hostname
+        filename = filename_prefix + ".cnl"
 
         # Make sure the filename is unique.
         i = 0
         while ( os.path.exists(filename) ):
-            filename = self.path + "/" + date + "-" + str(i) + ".cnl"
+            filename = filename_prefix + "-" + str(i) + ".cnl"
+
+        print( "Logging to file: " + filename )
 
         # Create Logger.
-        self.measurement_logger = MeasurementLogger(self.num_cpus, self.nics, self.comment, filename)
+        self.measurement_logger = MeasurementLogger(self.num_cpus, self.nics, [date,t],
+                                                    self.hostname, self.comment, filename)
 
         self.measurement_logger_enabled = True
 

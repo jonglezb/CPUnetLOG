@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 
+import os
 import psutil
 import time
 import sys
@@ -191,8 +192,14 @@ if __name__ == "__main__":
                         help="Path where the log files are stored in. (See --logging.)")
     args = parser.parse_args()
 
+
+    ## Get hostname (for display and logging).
+    osdetails = tuple(os.uname())
+    ostype = osdetails[0]
+    hostname = osdetails[1]
+
     ## Logging
-    logging_manager = LoggingManager( psutil.NUM_CPUS, nics, args.comment, args.path )
+    logging_manager = LoggingManager( psutil.NUM_CPUS, nics, hostname, args.comment, args.path )
     if args.logging:
         logging_manager.enable_measurement_logger()
 
