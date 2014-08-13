@@ -183,13 +183,16 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--logging", help="Enables logging.",
-                        action="store_true")
+    parser.add_argument("-l", "--logging", action="store_true",
+                        help="Enables logging.")
+    parser.add_argument("-c", "--comment",
+                        help="A comment that is stored in the logfile. (See --logging.)")
+    parser.add_argument("--path", default="/tmp/cpunetlog",
+                        help="Path where the log files are stored in. (See --logging.)")
     args = parser.parse_args()
 
-
     ## Logging
-    logging_manager = LoggingManager( psutil.NUM_CPUS, nics, None, "/tmp/cpunetlog/" )    ## TODO path...
+    logging_manager = LoggingManager( psutil.NUM_CPUS, nics, args.comment, args.path )
     if args.logging:
         logging_manager.enable_measurement_logger()
 
