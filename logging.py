@@ -22,7 +22,7 @@ class MeasurementLogger:
 
     ## Initialization ##
 
-    def __init__(self, num_cpus, nics, begin, hostname, comment, filename):
+    def __init__(self, num_cpus, nics, begin, hostname, environment, comment, filename):
         ## Attributes
         self.num_cpus = num_cpus
         self.nics = nics
@@ -40,6 +40,7 @@ class MeasurementLogger:
                                                     self.type_string,
                                                     begin,
                                                     hostname,
+                                                    environment,
                                                     comment)
 
         self.csv_header = self._create_csv_header(self.json_header)
@@ -89,7 +90,7 @@ class MeasurementLogger:
 
 
     ## TODO Move this outside the class?
-    def _create_json_header(self, class_names, class_defs, type, begin, hostname, comment):
+    def _create_json_header(self, class_names, class_defs, type, begin, hostname, environment, comment):
         top_level = dict()
         general = dict()
         class_definitions = dict()
@@ -100,6 +101,7 @@ class MeasurementLogger:
         general["Comment"] = comment
         general["Date"] = begin
         general["Hostname"] = hostname
+        general["Environment"] = environment
         #general["End"] = 0        ## TODO ... can't be written at the beginning of the file!!
         #general["Duration"] = 0   ## TODO
         top_level["General"] = general
@@ -246,12 +248,13 @@ class CNLFileWriter:
 
 
 class LoggingManager:
-    def __init__(self, num_cpus, nics, hostname, comment, path):
+    def __init__(self, num_cpus, nics, hostname, environment, comment, path):
         self.num_cpus = num_cpus
         self.nics = nics
         self.comment = comment
         self.path = path
         self.hostname = hostname
+        self.environment = environment
 
         if ( path and not os.path.exists(path) ):
             os.makedirs(path)
@@ -275,7 +278,7 @@ class LoggingManager:
 
         # Create Logger.
         self.measurement_logger = MeasurementLogger(self.num_cpus, self.nics, [date,t],
-                                                    self.hostname, self.comment, filename)
+                                                    self.hostname, self.environment, self.comment, filename)
 
         self.measurement_logger_enabled = True
 

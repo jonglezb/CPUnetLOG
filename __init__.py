@@ -7,6 +7,7 @@ import time
 import sys
 import traceback
 import math
+import json
 
 from collections import namedtuple
 
@@ -184,13 +185,37 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
+
+    ## Logging
     parser.add_argument("-l", "--logging", action="store_true",
                         help="Enables logging.")
     parser.add_argument("-c", "--comment",
                         help="A comment that is stored in the logfile. (See --logging.)")
     parser.add_argument("--path", default="/tmp/cpunetlog",
                         help="Path where the log files are stored in. (See --logging.)")
+    parser.add_argument("-e", "--environment",
+                        help="JSON file that holds arbitrary environment context. (This can be seen as a structured comment field.)")
+
+    # NICs
+    parser.add_argument("--nics", nargs='+',
+                        help="The network interfaces that should be displayed (and logged, see --logging).")
+
     args = parser.parse_args()
+
+
+
+    ## NICs
+    monitored_nics = nics
+    if ( args.nics ):
+        assert( set(nics).issuperset(args.nics) )
+        monitored_nics = args.nics
+
+    ## Read environment file (if given).
+    if ( args.environment ):
+        with open(args.environment) as f:
+            environment = json.load(f)
+    else:
+        environment = None
 
 
     ## Get hostname (for display and logging).
@@ -198,8 +223,9 @@ if __name__ == "__main__":
     ostype = osdetails[0]
     hostname = osdetails[1]
 
+
     ## Logging
-    logging_manager = LoggingManager( psutil.NUM_CPUS, nics, hostname, args.comment, args.path )
+    logging_manager = LoggingManager( psutil.NUM_CPUS, monitored_nics, hostname, environment, args.comment, args.path )
     if args.logging:
         logging_manager.enable_measurement_logger()
 
