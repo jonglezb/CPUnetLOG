@@ -23,12 +23,19 @@ divisor = 1000000.0
 rounding_digits = 2
 unit = "MBits"
 
+LOGGING_STATE_COLORS = {"Active": 3, "Disabled": 1, "Standby": 4, "Enabled": 3}
+
+
+## Reference to the logging manager, to display its state.
+logging_manager = None
+
 ## GUI, positions of fields
-LABEL_CPU_UTIL = 18
-LABEL_CPU_USER = 48
+LABEL_Sent = 18
+LABEL_Received = 48
+LABEL_CPU_UTIL = LABEL_Sent
+LABEL_CPU_USER = LABEL_Received
 LABEL_CPU_SYSTEM = 64
-LABEL_Sent = LABEL_CPU_UTIL
-LABEL_Received = LABEL_CPU_USER
+
 
 ## TODO ideas..
 #   - Add an option to set a fixed max. net-speed manually (for comparison)
@@ -72,6 +79,16 @@ def _display_cpu_bar(y, x, cpu):
 
 
 
+def _display_logging_state(y, x):
+    if ( not logging_manager ):
+        stdscr.addstr(y, x, 'Disabled', curses.A_BOLD)
+
+    else:
+        state = logging_manager.get_logging_state()
+        color = LOGGING_STATE_COLORS[state]
+
+        stdscr.addstr(y, x, state, curses.A_BOLD | curses.color_pair(color))
+
 
 def init():
     global stdscr
@@ -101,6 +118,7 @@ def init():
         curses.init_pair(4, curses.COLOR_YELLOW, -1)          # "Total", (<cpu-system> ?)
         curses.init_pair(5, curses.COLOR_CYAN, -1)            # <cpu-system> / <cpu-other>
         curses.init_pair(6, curses.COLOR_WHITE, -1)           # <cpu-system> / <cpu-other>
+        curses.init_pair(7, curses.COLOR_RED, -1)
 
     ## Show some output to avoid upsetting the user
     stdscr.addstr(3, 3, "loading ...", curses.A_BOLD)
@@ -121,8 +139,10 @@ def display(measurement):
     stdscr.border(0)
     timenow = time.strftime("%H:%M:%S")
     stdscr.addstr(1, 1, 'CPUnetLOG', curses.A_BOLD)
-    stdscr.addstr(1, LABEL_Sent, 'Time: {}'.format(timenow,), curses.A_BOLD)
-    stdscr.addstr(1, LABEL_Received, 'Interval: {}s'.format(round(measurement.timespan, 1)), curses.A_BOLD)
+    stdscr.addstr(1, LABEL_Sent, 'Time: {}'.format( timenow ), curses.A_BOLD)
+    stdscr.addstr(1, 39, 'Interval: {}s'.format( round(measurement.timespan, 1) ), curses.A_BOLD)
+    stdscr.addstr(1, 62, 'Logging: ', curses.A_BOLD)
+    _display_logging_state(1, 71)
     stdscr.refresh()
 
     y = 3

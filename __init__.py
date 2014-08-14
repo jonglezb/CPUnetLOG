@@ -94,6 +94,12 @@ class Measurement:
 
         return ret
 
+    def get_begin(self):
+        return self.r1.timestamp
+
+    def get_end(self):
+        return self.r2.timestamp
+
 
 
 def measure(interval = MEASUREMENT_INTERVAL):
@@ -124,6 +130,7 @@ def main_loop():
         # Set up (curses) UI.
         ui.nics = nics
         ui.nic_speeds = nic_speeds
+        ui.logging_manager = logging_manager
         ui.init()
 
         # Take an initial reading.
@@ -141,9 +148,9 @@ def main_loop():
             # Calculate the measurement from the last two readings.
             measurement = Measurement(old_reading, new_reading)
 
-            # Display the measurement.
-            running = ui.display( measurement )
+            # Display/log the measurement.
             running &= logging_manager.log(measurement)
+            running = ui.display( measurement )
 
             # Store the last reading as |old_reading|.
             old_reading = new_reading
@@ -189,6 +196,8 @@ if __name__ == "__main__":
     ## Logging
     parser.add_argument("-l", "--logging", action="store_true",
                         help="Enables logging.")
+    parser.add_argument("-A", "--autologging", action="store_true",
+                        help="Enables auto-logging. (Log only on network activity. Implies --logging)")
     parser.add_argument("-c", "--comment",
                         help="A comment that is stored in the logfile. (See --logging.)")
     parser.add_argument("--path", default="/tmp/cpunetlog",
@@ -224,8 +233,14 @@ if __name__ == "__main__":
     hostname = osdetails[1]
 
 
+    ## --autologging implies --logging
+    if ( args.autologging ):
+        args.logging = True
+
+
     ## Logging
-    logging_manager = LoggingManager( psutil.NUM_CPUS, monitored_nics, hostname, environment, args.comment, args.path )
+    logging_manager = LoggingManager( psutil.NUM_CPUS, monitored_nics, hostname, environment,
+                                      args.comment, args.path, args.autologging )
     if args.logging:
         logging_manager.enable_measurement_logger()
 

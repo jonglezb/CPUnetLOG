@@ -4,6 +4,9 @@ import json
 import time
 import os
 
+from history_store import HistoryStore
+
+
 class LoggingClass:
     def __init__(self, name, fields, siblings, description):
         self.name = name
@@ -248,7 +251,7 @@ class CNLFileWriter:
 
 
 class LoggingManager:
-    def __init__(self, num_cpus, nics, hostname, environment, comment, path):
+    def __init__(self, num_cpus, nics, hostname, environment, comment, path, autologging):
         self.num_cpus = num_cpus
         self.nics = nics
         self.comment = comment
@@ -256,15 +259,38 @@ class LoggingManager:
         self.hostname = hostname
         self.environment = environment
 
+        # auto-logging
+        self.INACTIVITY_THRESHOLD       = 30
+        self.HISTORY_SIZE               = 30
+        self.auto_logging = autologging
+        if ( autologging ):
+            self.log_history = HistoryStore(self.HISTORY_SIZE)
+            self.logging_active = False
+            self.inactivity_count = 0
+
+
+        # "mkdir" on path, if necessary.
         if ( path and not os.path.exists(path) ):
             os.makedirs(path)
 
+
+        ## Logger.
+        self.measurement_logger = None
         self.measurement_logger_enabled = False
 
 
-    def enable_measurement_logger(self):
-        # Create filename from date.
-        t = time.time()
+
+
+    def _start_new_measurement_logger(self, measurement=None):
+        assert( not self.measurement_logger )
+
+        # find start time
+        if ( measurement ):
+            t = measurement.get_begin()
+        else:
+            t = time.time()
+
+        # Create filename from start time.
         date = time.strftime("%Y-%m-%d_%H:%M:%S", time.localtime(t))
         filename_prefix = self.path + "/" + date + "-" + self.hostname
         filename = filename_prefix + ".cnl"
@@ -280,17 +306,133 @@ class LoggingManager:
         self.measurement_logger = MeasurementLogger(self.num_cpus, self.nics, [date,t],
                                                     self.hostname, self.environment, self.comment, filename)
 
-        self.measurement_logger_enabled = True
+
+    def _stop_measurement_logger(self):
+        print( "Logging stopped. File: " + self.measurement_logger.filename )
+        self.measurement_logger.close()
+
+        self.measurement_logger = None
 
 
-    def log(self, measurement):
-        if ( self.measurement_logger_enabled ):
+
+    def _is_activity_on_nics(self, measurement):
+        for nic in self.nics:
+            values = measurement.net_io[nic]
+
+            if ( values.ratio["bytes_sent"] > 0 or values.ratio["bytes_recv"] > 0 ):
+                return True
+
+        return False
+
+
+
+    def _log(self, measurement):
+        if ( self.measurement_logger ):
             self.measurement_logger.log(measurement)
+
+
+
+
+    def _auto_logging_process_in_inactive_state(self, measurement):
+        ## Store measurement.
+        self.log_history.push(measurement)
+
+        ## If activity detected, start logging.
+        if ( self._is_activity_on_nics(measurement) ):
+            self.logging_active = True
+            self.inactivity_count = 0
+
+            ## Create a new measurement logger (if enabled).
+            if ( self.measurement_logger_enabled ):
+                self._start_new_measurement_logger()
+
+            ## Log the new measurement, but also some history.
+            for m in self.log_history.flush():
+                self._log(m)
+
+
+    def _auto_logging_process_in_active_state(self, measurement):
+        ## Log measurement.
+        self._log(measurement)
+
+        ## Branch: Inactive sample.
+        if ( not self._is_activity_on_nics(measurement) ):
+            self.inactivity_count += 1
+
+            ## Inactivity phase too long: Stop logging.
+            if ( self.inactivity_count >= self.INACTIVITY_THRESHOLD ):
+                if ( self.measurement_logger_enabled ):
+                    self._stop_measurement_logger()
+
+                self.logging_active = False
+
+                ## Stop everything!!  (XXX)
+                #return False  ## TODO aktuell..
+
+        ## Branch: Active sample.
+        else:
+            self.inactivity_count = 0
 
         return True
 
 
+    def _auto_logging(self, measurement):
+        ## BRANCH: Logging inactive,
+        #    wait for activity on observed nics.
+        if ( not self.logging_active ):
+            self._auto_logging_process_in_inactive_state(measurement)
+
+            return True
+
+        ## BRANCH: Logging active,
+        #    log until observed nics get inactive.
+        else:
+            return self._auto_logging_process_in_active_state(measurement)
+
+        ## Should be never reached.
+        assert( False )
+
+
+    def enable_measurement_logger(self):
+        self.measurement_logger_enabled = True
+
+        if ( not self.auto_logging ):
+            self._start_new_measurement_logger()
+
+
+
+    def log(self, measurement):
+
+        ## BRANCH: no auto-logging, just call _log() directly.
+        if ( not self.auto_logging ):
+            self._log(measurement)
+
+            return True
+
+        ## BRANCH: Auto-logging
+        else:
+            return self._auto_logging(measurement)
+
+
+
+    def get_logging_state(self):
+        if ( not self.measurement_logger_enabled ):
+            return "Disabled"
+
+        # BRANCH: no auto-logging
+        if ( not self.auto_logging ):
+            return "Enabled"
+
+        # BRANCH: auto-logging
+        else:
+            if ( self.logging_active ):
+                return "Active"
+            else:
+                return "Standby"
+
+
+
     def close(self):
-        if ( self.measurement_logger_enabled ):
-            self.measurement_logger.close()
+        if ( self.measurement_logger ):
+            self._stop_measurement_logger()
 
