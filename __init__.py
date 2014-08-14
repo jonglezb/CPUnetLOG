@@ -198,6 +198,8 @@ if __name__ == "__main__":
                         help="Enables logging.")
     parser.add_argument("-A", "--autologging", action="store_true",
                         help="Enables auto-logging. (Log only on network activity. Implies --logging)")
+    parser.add_argument("-W", "--watch",
+                        help="Store the command-line of the given program as log-comment. (Use together with --autologging.)")
     parser.add_argument("-c", "--comment",
                         help="A comment that is stored in the logfile. (See --logging.)")
     parser.add_argument("--path", default="/tmp/cpunetlog",
@@ -240,7 +242,7 @@ if __name__ == "__main__":
 
     ## Logging
     logging_manager = LoggingManager( psutil.NUM_CPUS, monitored_nics, hostname, environment,
-                                      args.comment, args.path, args.autologging )
+                                      args.comment, args.path, args.autologging, args.watch )
     if args.logging:
         logging_manager.enable_measurement_logger()
 

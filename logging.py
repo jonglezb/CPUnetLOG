@@ -3,6 +3,7 @@
 import json
 import time
 import os
+import psutil
 
 from history_store import HistoryStore
 
@@ -251,13 +252,15 @@ class CNLFileWriter:
 
 
 class LoggingManager:
-    def __init__(self, num_cpus, nics, hostname, environment, comment, path, autologging):
+    def __init__(self, num_cpus, nics, hostname, environment, comment, path, autologging, watch_experiment):
         self.num_cpus = num_cpus
         self.nics = nics
         self.comment = comment
+        self.auto_comment = None
         self.path = path
         self.hostname = hostname
         self.environment = environment
+        self.watch_experiment = watch_experiment
 
         # auto-logging
         self.INACTIVITY_THRESHOLD       = 30
@@ -302,9 +305,16 @@ class LoggingManager:
 
         print( "Logging to file: " + filename )
 
+
+        # Auto-comment: Store the command line of the observed tool/experiment.
+        if ( self.watch_experiment ):
+            self.auto_comment = self._find_cmd_line_of(self.watch_experiment)
+
         # Create Logger.
         self.measurement_logger = MeasurementLogger(self.num_cpus, self.nics, [date,t],
-                                                    self.hostname, self.environment, self.comment, filename)
+                                                    self.hostname, self.environment,
+                                                    self.auto_comment if self.auto_comment else self.comment,
+                                                    filename)
 
 
     def _stop_measurement_logger(self):
@@ -332,6 +342,32 @@ class LoggingManager:
 
 
 
+    def _find_cmd_line_of(self, name):
+        hits = list()
+
+        for p in psutil.process_iter():
+            if ( p.name == name ):
+                hits.append( " ".join(p.cmdline) )
+
+        if ( len(hits) > 0 ):
+            return "; ".join(hits)
+
+        return None
+
+
+    def _auto_logging_transition_to_active(self):
+        self.logging_active = True
+        self.inactivity_count = 0
+
+        ## Create a new measurement logger (if enabled).
+        if ( self.measurement_logger_enabled ):
+            self._start_new_measurement_logger()
+
+        ## Log the new measurement, but also some history.
+        for m in self.log_history.flush():
+            self._log(m)
+
+
 
     def _auto_logging_process_in_inactive_state(self, measurement):
         ## Store measurement.
@@ -339,17 +375,7 @@ class LoggingManager:
 
         ## If activity detected, start logging.
         if ( self._is_activity_on_nics(measurement) ):
-            self.logging_active = True
-            self.inactivity_count = 0
-
-            ## Create a new measurement logger (if enabled).
-            if ( self.measurement_logger_enabled ):
-                self._start_new_measurement_logger()
-
-            ## Log the new measurement, but also some history.
-            for m in self.log_history.flush():
-                self._log(m)
-
+            self._auto_logging_transition_to_active()
 
     def _auto_logging_process_in_active_state(self, measurement):
         ## Log measurement.
@@ -367,7 +393,7 @@ class LoggingManager:
                 self.logging_active = False
 
                 ## Stop everything!!  (XXX)
-                #return False  ## TODO aktuell..
+                #return False
 
         ## Branch: Active sample.
         else:
