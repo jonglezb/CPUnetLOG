@@ -143,7 +143,7 @@ def main_loop():
 
             # Display the measurement.
             running = ui.display( measurement )
-            logging_manager.log(measurement)
+            running &= logging_manager.log(measurement)
 
             # Store the last reading as |old_reading|.
             old_reading = new_reading

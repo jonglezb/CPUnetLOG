@@ -287,6 +287,8 @@ class LoggingManager:
         if ( self.measurement_logger_enabled ):
             self.measurement_logger.log(measurement)
 
+        return True
+
 
     def close(self):
         if ( self.measurement_logger_enabled ):
