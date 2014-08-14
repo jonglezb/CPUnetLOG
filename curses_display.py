@@ -23,7 +23,7 @@ divisor = 1000000.0
 rounding_digits = 2
 unit = "MBits"
 
-LOGGING_STATE_COLORS = {"Active": 3, "Disabled": 1, "Standby": 4, "Enabled": 3}
+LOGGING_STATE_COLORS = {"Active": 3, "(Active)": 2, "Disabled": 1, "Standby": 4, "Enabled": 3}
 
 
 ## Reference to the logging manager, to display its state.

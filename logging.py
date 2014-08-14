@@ -426,7 +426,10 @@ class LoggingManager:
         # BRANCH: auto-logging
         else:
             if ( self.logging_active ):
-                return "Active"
+                if ( self.inactivity_count > 2 ):
+                    return "(Active)"
+                else:
+                    return "Active"
             else:
                 return "Standby"
 
