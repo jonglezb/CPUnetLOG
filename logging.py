@@ -351,6 +351,7 @@ class LoggingManager:
 
         if ( len(hits) > 0 ):
             return "; ".join(hits)
+            #return hits  ## TODO return a list; maybe introduce field "comments"/"watched_experiments"?
 
         return None
 
