@@ -323,6 +323,7 @@ class LoggingManager:
         self.measurement_logger.close()
 
         self.measurement_logger = None
+        self.auto_comment = None
 
 
 
