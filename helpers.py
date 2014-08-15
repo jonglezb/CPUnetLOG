@@ -163,3 +163,16 @@ def split_proprtionally(text, weights, size=0, fill=" "):
         last_pos += pos
 
     return ret
+
+
+def get_sysinfo():
+    #uname = os.uname()
+    #input_fields = ("sysname", "nodename", "release", "version", "machine")
+
+    output_fields = ("sysname", "hostname", "kernel", "version", "machine")
+
+    ret = dict()
+    for out_field, value in zip(output_fields, os.uname()):
+        ret[out_field] = value
+
+    return ret

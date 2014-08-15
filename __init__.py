@@ -228,20 +228,13 @@ if __name__ == "__main__":
     else:
         environment = None
 
-
-    ## Get hostname (for display and logging).
-    osdetails = tuple(os.uname())
-    ostype = osdetails[0]
-    hostname = osdetails[1]
-
-
     ## --autologging implies --logging
     if ( args.autologging ):
         args.logging = True
 
 
     ## Logging
-    logging_manager = LoggingManager( psutil.NUM_CPUS, monitored_nics, hostname, environment,
+    logging_manager = LoggingManager( psutil.NUM_CPUS, monitored_nics, helpers.get_sysinfo(), environment,
                                       args.comment, args.path, args.autologging, args.watch )
     if args.logging:
         logging_manager.enable_measurement_logger()

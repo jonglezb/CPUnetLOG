@@ -26,7 +26,7 @@ class MeasurementLogger:
 
     ## Initialization ##
 
-    def __init__(self, num_cpus, nics, begin, hostname, environment, comment, filename):
+    def __init__(self, num_cpus, nics, begin, system_info, environment, comment, filename):
         ## Attributes
         self.num_cpus = num_cpus
         self.nics = nics
@@ -43,7 +43,7 @@ class MeasurementLogger:
                                                     self.class_defs.values(),
                                                     self.type_string,
                                                     begin,
-                                                    hostname,
+                                                    system_info,
                                                     environment,
                                                     comment)
 
@@ -94,7 +94,7 @@ class MeasurementLogger:
 
 
     ## TODO Move this outside the class?
-    def _create_json_header(self, class_names, class_defs, type, begin, hostname, environment, comment):
+    def _create_json_header(self, class_names, class_defs, type, begin, system_info, environment, comment):
         top_level = dict()
         general = dict()
         class_definitions = dict()
@@ -104,7 +104,7 @@ class MeasurementLogger:
         general["Type"] = type
         general["Comment"] = comment
         general["Date"] = begin
-        general["Hostname"] = hostname
+        general["SystemInfo"] = system_info
         general["Environment"] = environment
         #general["End"] = 0        ## TODO ... can't be written at the beginning of the file!!
         #general["Duration"] = 0   ## TODO
@@ -252,13 +252,14 @@ class CNLFileWriter:
 
 
 class LoggingManager:
-    def __init__(self, num_cpus, nics, hostname, environment, comment, path, autologging, watch_experiment):
+    def __init__(self, num_cpus, nics, system_info, environment, comment, path, autologging, watch_experiment):
         self.num_cpus = num_cpus
         self.nics = nics
         self.comment = comment
         self.auto_comment = None
         self.path = path
-        self.hostname = hostname
+        self.system_info = system_info
+        self.hostname = system_info["hostname"]
         self.environment = environment
         self.watch_experiment = watch_experiment
 
@@ -312,7 +313,7 @@ class LoggingManager:
 
         # Create Logger.
         self.measurement_logger = MeasurementLogger(self.num_cpus, self.nics, [date,t],
-                                                    self.hostname, self.environment,
+                                                    self.system_info, self.environment,
                                                     self.auto_comment if self.auto_comment else self.comment,
                                                     filename)
 
