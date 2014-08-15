@@ -236,6 +236,15 @@ def display(measurement):
     stdscr.addstr(y, LABEL_Received, 'Received:', curses.color_pair(2))
     stdscr.addstr(y, LABEL_Received+10, '{0} {1}/s'.format(_format_net_speed(sum_receiving),unit), curses.color_pair(3))
 
+
+
+    ## Show logging comment
+    comment = logging_manager.get_logging_comment()
+    if ( comment ):
+        y += 3
+        stdscr.addstr(y, 3, 'Comment: ', curses.A_BOLD)
+        stdscr.addstr(y, 3+9, comment)
+
     stdscr.refresh()
 
     return True

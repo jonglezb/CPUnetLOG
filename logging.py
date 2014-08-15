@@ -461,6 +461,10 @@ class LoggingManager:
                 return "Standby"
 
 
+    def get_logging_comment(self):
+        return self.auto_comment if self.auto_comment else self.comment
+
+
 
     def close(self):
         if ( self.measurement_logger ):
