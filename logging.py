@@ -265,7 +265,7 @@ class LoggingManager:
 
         # auto-logging
         self.INACTIVITY_THRESHOLD       = 30
-        self.HISTORY_SIZE               = 30
+        self.HISTORY_SIZE               = 5
         self.auto_logging = autologging
         if ( autologging ):
             self.log_history = HistoryStore(self.HISTORY_SIZE)
