@@ -154,15 +154,21 @@ def display(measurement):
         stdscr.addstr(y, 1, 'CPU{0}'.format( num ), curses.color_pair(1))
         stdscr.addstr(y, LABEL_CPU_UTIL, 'util: ', curses.color_pair(2))
         stdscr.addstr(y, LABEL_CPU_UTIL+26, '|', curses.color_pair(2))
-        stdscr.addstr(y, LABEL_CPU_USER, 'user: ', curses.color_pair(2))
-        stdscr.addstr(y, LABEL_CPU_SYSTEM, 'system: ', curses.color_pair(2))
+        #stdscr.addstr(y, LABEL_CPU_USER, 'type: ', curses.color_pair(2))
+        #stdscr.addstr(y, LABEL_CPU_SYSTEM, 'system: ', curses.color_pair(2))
 
         # CPU bar
         _display_cpu_bar( y, LABEL_CPU_UTIL+6, cpu )
 
         # user/system
-        stdscr.addstr(y, LABEL_CPU_USER+6, '{0:.2%}'.format( cpu.user/100.0 ), curses.color_pair(3))
-        stdscr.addstr(y, LABEL_CPU_SYSTEM+8, '{0:.2%}'.format( cpu.system/100.0 ), curses.color_pair(3))
+        #stdscr.addstr(y, LABEL_CPU_USER+6, '{0:.2%}'.format( cpu.user/100.0 ), curses.color_pair(3))
+        #stdscr.addstr(y, LABEL_CPU_SYSTEM+8, '{0:.2%}'.format( cpu.system/100.0 ), curses.color_pair(3))
+        cpu_sorted = helpers.sort_named_tuple(cpu)
+        stdscr.addstr(y, LABEL_CPU_USER, cpu_sorted[0][0] + ": ", curses.color_pair(4))
+        stdscr.addstr("{:.2%}".format(cpu_sorted[0][1]/100), curses.color_pair(3))
+
+        stdscr.addstr(y, LABEL_CPU_SYSTEM, cpu_sorted[1][0] + ": ", curses.color_pair(4))
+        stdscr.addstr("{:.2%}".format(cpu_sorted[1][1]/100), curses.color_pair(3))
 
         num += 1
         y += 1

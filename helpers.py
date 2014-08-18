@@ -4,6 +4,7 @@
 from collections import namedtuple
 import os
 import netifaces
+import operator
 
 _ptime_cpu_perc_nt = None
 
@@ -176,3 +177,7 @@ def get_sysinfo():
         ret[out_field] = value
 
     return ret
+
+
+def sort_named_tuple(data):
+    return sorted( data._asdict().items() , key=operator.itemgetter(1), reverse=True)
