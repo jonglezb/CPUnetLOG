@@ -25,6 +25,16 @@ unit = "MBits"
 
 LOGGING_STATE_COLORS = {"Active": 3, "(Active)": 2, "Disabled": 1, "Standby": 4, "Enabled": 3}
 
+CPU_TYPE_LABELS = { "user": "user:",
+                    "nice": "nice:",
+                    "system": "system:",
+                    "idle": "idle:",
+                    "iowait": "iowait:",
+                    "irq": "irq:",
+                    "softirq": "sftirq",
+                    "steal": "steal:",
+                    "guest": "guest:",
+                    "guest_nice": "g_nice:" }
 
 ## Reference to the logging manager, to display its state.
 logging_manager = None
@@ -164,10 +174,12 @@ def display(measurement):
         #stdscr.addstr(y, LABEL_CPU_USER+6, '{0:.2%}'.format( cpu.user/100.0 ), curses.color_pair(3))
         #stdscr.addstr(y, LABEL_CPU_SYSTEM+8, '{0:.2%}'.format( cpu.system/100.0 ), curses.color_pair(3))
         cpu_sorted = helpers.sort_named_tuple(cpu)
-        stdscr.addstr(y, LABEL_CPU_USER, cpu_sorted[0][0] + ": ", curses.color_pair(4))
+        t = '{0: <6}'.format( CPU_TYPE_LABELS[cpu_sorted[0][0]] )
+        stdscr.addstr(y, LABEL_CPU_USER, t, curses.color_pair(4))
         stdscr.addstr("{:.2%}".format(cpu_sorted[0][1]/100), curses.color_pair(3))
 
-        stdscr.addstr(y, LABEL_CPU_SYSTEM, cpu_sorted[1][0] + ": ", curses.color_pair(4))
+        t = '{0: <6}'.format( CPU_TYPE_LABELS[cpu_sorted[1][0]] )
+        stdscr.addstr(y, LABEL_CPU_SYSTEM, t, curses.color_pair(4))
         stdscr.addstr("{:.2%}".format(cpu_sorted[1][1]/100), curses.color_pair(3))
 
         num += 1
