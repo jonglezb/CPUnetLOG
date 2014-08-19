@@ -46,6 +46,8 @@ LABEL_CPU_UTIL = LABEL_Sent
 LABEL_CPU_USER = LABEL_Received
 LABEL_CPU_SYSTEM = 64
 
+COMMENT_WIDTH = 66
+
 
 ## TODO ideas..
 #   - Add an option to set a fixed max. net-speed manually (for comparison)
@@ -261,7 +263,11 @@ def display(measurement):
     if ( comment ):
         y += 3
         stdscr.addstr(y, 3, 'Comment: ', curses.A_BOLD)
-        stdscr.addstr(y, 3+9, comment)
+
+        parts = ( comment[i:i+COMMENT_WIDTH] for i in range(0, len(comment), COMMENT_WIDTH) )
+        for part in parts:
+            stdscr.addstr(y, 3+9, part)
+            y += 1
 
     stdscr.refresh()
 
