@@ -55,7 +55,6 @@ COMMENT_WIDTH = 66
 #           (and switch to a scale with the real max. value for the nic.)
 #
 #   - total (GB transferred)
-#   - other (CPU usage)  -- maybe compacter design for user/sys/other
 #   - "Total" field for CPU usage (as well)
 #   - Also draw a bar for the totals?
 
