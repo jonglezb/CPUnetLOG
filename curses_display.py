@@ -70,14 +70,14 @@ def _display_cpu_bar(y, x, cpu):
     # Constants
     CPU_BAR_COLORS = ( curses.color_pair(3) | curses.A_REVERSE,    # user
                        curses.color_pair(4) | curses.A_REVERSE,    # system
-                       curses.color_pair(5) | curses.A_REVERSE,    # softirq
+                       curses.color_pair(5) | curses.A_REVERSE,    # irq / softirq
                        curses.color_pair(6) | curses.A_REVERSE,    # other
                        curses.color_pair(3) )                      # idle
 
     # Calculate proportions
     cpu_util = 100-cpu.idle
-    other = 100 - sum( (cpu.user, cpu.system, cpu.softirq, cpu.idle) )
-    proportions = [cpu.user, cpu.system, cpu.softirq, other, cpu.idle]
+    other = 100 - sum( (cpu.user, cpu.system, cpu.irq, cpu.idle) )
+    proportions = [cpu.user, cpu.system, cpu.irq, other, cpu.idle]
 
     # Prepare text.
     text = '{0:.2%}'.format((cpu_util)/100.0)
