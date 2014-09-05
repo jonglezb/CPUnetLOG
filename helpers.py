@@ -179,5 +179,17 @@ def get_sysinfo():
     return ret
 
 
-def sort_named_tuple(data):
-    return sorted( data._asdict().items() , key=operator.itemgetter(1), reverse=True)
+def sort_named_tuple(data, skip=None):
+    """
+    Sort a named tuple by its values.
+
+    With |skip| a value can be specified that is excluded from the result.
+    """
+
+    d = data._asdict()
+
+    # NOTE: Possible improvement: Accept a list in skip?
+    if ( skip ):
+        del d[skip]
+
+    return sorted( d.items() , key=operator.itemgetter(1), reverse=True)

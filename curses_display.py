@@ -174,7 +174,7 @@ def display(measurement):
         # user/system
         #stdscr.addstr(y, LABEL_CPU_USER+6, '{0:.2%}'.format( cpu.user/100.0 ), curses.color_pair(3))
         #stdscr.addstr(y, LABEL_CPU_SYSTEM+8, '{0:.2%}'.format( cpu.system/100.0 ), curses.color_pair(3))
-        cpu_sorted = helpers.sort_named_tuple(cpu)
+        cpu_sorted = helpers.sort_named_tuple(cpu, skip="idle")
         t = '{0: <6}'.format( CPU_TYPE_LABELS[cpu_sorted[0][0]] )
         stdscr.addstr(y, LABEL_CPU_USER, t, curses.color_pair(4))
         stdscr.addstr("{:.2%}".format(cpu_sorted[0][1]/100), curses.color_pair(3))
