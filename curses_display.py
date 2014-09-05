@@ -172,17 +172,13 @@ def display(measurement):
         _display_cpu_bar( y, LABEL_CPU_UTIL+6, cpu )
 
         # user/system
-        #stdscr.addstr(y, LABEL_CPU_1+6, '{0:.2%}'.format( cpu.user/100.0 ), curses.color_pair(3))
-        #stdscr.addstr(y, LABEL_CPU_2+8, '{0:.2%}'.format( cpu.system/100.0 ), curses.color_pair(3))
         cpu_sorted = helpers.sort_named_tuple(cpu, skip="idle")
         t = '{0: >8}'.format( CPU_TYPE_LABELS[cpu_sorted[0][0]] )
         stdscr.addstr(y, LABEL_CPU_1, t, curses.color_pair(4))
-        #stdscr.addstr("{:.2%}".format(cpu_sorted[0][1]/100), curses.color_pair(3))
         stdscr.addstr("{:>6.2f}%".format(cpu_sorted[0][1]), curses.color_pair(3))
 
         t = '{0: >8}'.format( CPU_TYPE_LABELS[cpu_sorted[1][0]] )
         stdscr.addstr(y, LABEL_CPU_2, t, curses.color_pair(4))
-        #stdscr.addstr("{:.2%}".format(cpu_sorted[1][1]/100), curses.color_pair(3))
         stdscr.addstr("{:>6.2f}%".format(cpu_sorted[0][1]), curses.color_pair(3))
 
         num += 1
