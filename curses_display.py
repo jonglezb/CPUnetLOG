@@ -25,16 +25,16 @@ unit = "MBits"
 
 LOGGING_STATE_COLORS = {"Active": 3, "(Active)": 2, "Disabled": 1, "Standby": 4, "Enabled": 3}
 
-CPU_TYPE_LABELS = { "user": "user:",
-                    "nice": "nice:",
-                    "system": "system:",
-                    "idle": "idle:",
-                    "iowait": "iowait:",
-                    "irq": "irq:",
-                    "softirq": "sftirq",
-                    "steal": "steal:",
-                    "guest": "guest:",
-                    "guest_nice": "g_nice:" }
+CPU_TYPE_LABELS = { "user": "user: ",
+                    "nice": "nice: ",
+                    "system": "system: ",
+                    "idle": "idle: ",
+                    "iowait": "iowait: ",
+                    "irq": "irq: ",
+                    "softirq": "sftirq: ",
+                    "steal": "steal: ",
+                    "guest": "guest: ",
+                    "guest_nice": "g_nice: " }
 
 ## Reference to the logging manager, to display its state.
 logging_manager = None
@@ -43,8 +43,8 @@ logging_manager = None
 LABEL_Sent = 18
 LABEL_Received = 48
 LABEL_CPU_UTIL = LABEL_Sent
-LABEL_CPU_USER = LABEL_Received
-LABEL_CPU_SYSTEM = 64
+LABEL_CPU_1 = LABEL_Received-1
+LABEL_CPU_2 = 63
 
 COMMENT_WIDTH = 66
 
@@ -172,16 +172,18 @@ def display(measurement):
         _display_cpu_bar( y, LABEL_CPU_UTIL+6, cpu )
 
         # user/system
-        #stdscr.addstr(y, LABEL_CPU_USER+6, '{0:.2%}'.format( cpu.user/100.0 ), curses.color_pair(3))
-        #stdscr.addstr(y, LABEL_CPU_SYSTEM+8, '{0:.2%}'.format( cpu.system/100.0 ), curses.color_pair(3))
+        #stdscr.addstr(y, LABEL_CPU_1+6, '{0:.2%}'.format( cpu.user/100.0 ), curses.color_pair(3))
+        #stdscr.addstr(y, LABEL_CPU_2+8, '{0:.2%}'.format( cpu.system/100.0 ), curses.color_pair(3))
         cpu_sorted = helpers.sort_named_tuple(cpu, skip="idle")
-        t = '{0: <6}'.format( CPU_TYPE_LABELS[cpu_sorted[0][0]] )
-        stdscr.addstr(y, LABEL_CPU_USER, t, curses.color_pair(4))
-        stdscr.addstr("{:.2%}".format(cpu_sorted[0][1]/100), curses.color_pair(3))
+        t = '{0: >8}'.format( CPU_TYPE_LABELS[cpu_sorted[0][0]] )
+        stdscr.addstr(y, LABEL_CPU_1, t, curses.color_pair(4))
+        #stdscr.addstr("{:.2%}".format(cpu_sorted[0][1]/100), curses.color_pair(3))
+        stdscr.addstr("{:>6.2f}%".format(cpu_sorted[0][1]), curses.color_pair(3))
 
-        t = '{0: <6}'.format( CPU_TYPE_LABELS[cpu_sorted[1][0]] )
-        stdscr.addstr(y, LABEL_CPU_SYSTEM, t, curses.color_pair(4))
-        stdscr.addstr("{:.2%}".format(cpu_sorted[1][1]/100), curses.color_pair(3))
+        t = '{0: >8}'.format( CPU_TYPE_LABELS[cpu_sorted[1][0]] )
+        stdscr.addstr(y, LABEL_CPU_2, t, curses.color_pair(4))
+        #stdscr.addstr("{:.2%}".format(cpu_sorted[1][1]/100), curses.color_pair(3))
+        stdscr.addstr("{:>6.2f}%".format(cpu_sorted[0][1]), curses.color_pair(3))
 
         num += 1
         y += 1
