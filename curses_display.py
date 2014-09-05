@@ -175,11 +175,11 @@ def display(measurement):
         cpu_sorted = helpers.sort_named_tuple(cpu, skip="idle")
         t = '{0: >8}'.format( CPU_TYPE_LABELS[cpu_sorted[0][0]] )
         stdscr.addstr(y, LABEL_CPU_1, t, curses.color_pair(4))
-        stdscr.addstr("{:>6.2f}%".format(cpu_sorted[0][1]), curses.color_pair(3))
+        stdscr.addstr("{:>5.2f}%".format(cpu_sorted[0][1]), curses.color_pair(3))
 
         t = '{0: >8}'.format( CPU_TYPE_LABELS[cpu_sorted[1][0]] )
         stdscr.addstr(y, LABEL_CPU_2, t, curses.color_pair(4))
-        stdscr.addstr("{:>6.2f}%".format(cpu_sorted[0][1]), curses.color_pair(3))
+        stdscr.addstr("{:>5.2f}%".format(cpu_sorted[0][1]), curses.color_pair(3))
 
         num += 1
         y += 1
