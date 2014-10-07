@@ -1,0 +1,5 @@
+## CNL-Tools
+
+BASE=""  # <-- Please modify to fit your installation.
+
+alias cpunetlog="$BASE/cpunetlog/__init__.py"
