@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 
+# Copyright (c) 2014,
+# Karlsruhe Institute of Technology, Institute of Telematics
+#
+# This code is provided under the BSD 2-Clause License.
+# Please refer to the LICENSE.txt file for further information.
+#
+# Author: Mario Hock
+
+
 import os
 import psutil
 import time
