@@ -23,6 +23,7 @@ from collections import namedtuple
 import helpers
 import curses_display as ui
 from logging import LoggingManager
+from psutil_functions import calculate_cpu_times_percent
 
 
 def get_time():
@@ -91,7 +92,7 @@ class Measurement:
 
         ## calculate differences
         self.timespan = self.r2.timestamp - self.r1.timestamp
-        self.cpu_times_percent = helpers.calculate_cpu_times_percent(self.r1.cpu_times, self.r2.cpu_times, percpu=True)
+        self.cpu_times_percent = calculate_cpu_times_percent(self.r1.cpu_times, self.r2.cpu_times, percpu=True)
         self.net_io = self._calculate_net_io()
 
 

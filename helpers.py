@@ -10,7 +10,6 @@
 # Author: Mario Hock
 
 
-from collections import namedtuple
 import os
 import netifaces
 import operator

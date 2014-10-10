@@ -18,6 +18,8 @@
 #
 # Author: Mario Hock
 
+import os
+from collections import namedtuple
 
 _ptime_cpu_perc_nt = None
 
