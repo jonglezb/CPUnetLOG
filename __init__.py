@@ -165,7 +165,7 @@ def main_loop():
             # Store the last reading as |old_reading|.
             old_reading = new_reading
 
-            time.sleep(1)
+            time.sleep(1)  # XXX TODO use variable instead of hard code 1s
                 ## XXX We could calculating the remaining waiting-time here.
                 #    (But I assume the difference is negligible.)
 
