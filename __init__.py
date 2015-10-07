@@ -134,6 +134,12 @@ def main_loop():
       - Logs the measurements with the LoggingManager
     """
 
+    ## TODO this should be configurable by command line options
+    sample_interval = 0.1
+    display_interval = 1.0
+
+    display_skip = max(display_interval / sample_interval, 1)
+
     err = None
 
     try:
@@ -150,6 +156,7 @@ def main_loop():
         now = time.time()
         time.sleep(math.ceil(now)-now)
 
+        display_skip_counter = 0
         running = True
         while running:
             # Take a new reading.
@@ -160,14 +167,17 @@ def main_loop():
 
             # Display/log the measurement.
             running &= logging_manager.log(measurement)
-            running = ui.display( measurement )
+            if ( display_skip_counter % display_skip < 1 ):   # the display may skip some samples
+                running = ui.display( measurement )
+                display_skip_counter = 0
+            display_skip_counter += 1
 
             # Store the last reading as |old_reading|.
             old_reading = new_reading
 
-            time.sleep(1)  # XXX TODO use variable instead of hard code 1s
-                ## XXX We could calculating the remaining waiting-time here.
-                #    (But I assume the difference is negligible.)
+            time.sleep(sample_interval)
+                ## XXX TODO We could calculating the remaining waiting-time here.
+
 
 
     except KeyboardInterrupt:
