@@ -14,9 +14,9 @@ import time
 import os
 import psutil
 
-## XXX testing...
-import subprocess
-import signal
+## experimental "tcp_probe"
+#import subprocess
+#import signal
 
 from history_store import HistoryStore
 
@@ -318,8 +318,8 @@ class LoggingManager:
             filename = filename_prefix + "-" + str(i) + ".cnl"
             i += 1
 
-        ## XXX experimental
-        tcpprobe_filename = filename[:-4] + ".tcpprobe"
+        ## experimental "tcp_probe"
+        #tcpprobe_filename = filename[:-4] + ".tcpprobe"
 
 
         print( "Logging to file: " + filename )
@@ -336,13 +336,13 @@ class LoggingManager:
                                                     filename)
 
 
-        ## XXX testing...
-        # test if tcp_probe file is readable
-        PATH_TO_TCP_PROBE = "/proc/net/tcpprobe"
-        self.use_tcpprobe = os.access(PATH_TO_TCP_PROBE, os.R_OK)
-        if ( self.use_tcpprobe ):
-            ## start "cat /proc/net/tcpprobe > file" in parallel (and send quit signal, when logging is stopped)
-            self.tcpprobe = subprocess.Popen("cat " + PATH_TO_TCP_PROBE + " > " + tcpprobe_filename, shell=True, preexec_fn=os.setsid)
+        ## experimental "tcp_probe"
+        ## test if tcp_probe file is readable
+        #PATH_TO_TCP_PROBE = "/proc/net/tcpprobe"
+        #self.use_tcpprobe = os.access(PATH_TO_TCP_PROBE, os.R_OK)
+        #if ( self.use_tcpprobe ):
+            ### start "cat /proc/net/tcpprobe > file" in parallel (and send quit signal, when logging is stopped)
+            #self.tcpprobe = subprocess.Popen("cat " + PATH_TO_TCP_PROBE + " > " + tcpprobe_filename, shell=True, preexec_fn=os.setsid)
 
 
 
@@ -354,10 +354,10 @@ class LoggingManager:
         self.measurement_logger = None
         self.auto_comment = None
 
-        ## XXX experimental
+        ## experimental "tcp_probe"
         ## kill "cat /proc/net/tcpprobe > file"
-        if ( self.use_tcpprobe ):
-            os.killpg(self.tcpprobe.pid, signal.SIGTERM)
+        #if ( self.use_tcpprobe ):
+            #os.killpg(self.tcpprobe.pid, signal.SIGTERM)
 
 
     def _is_activity_on_nics(self, measurement):
