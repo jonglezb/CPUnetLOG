@@ -14,6 +14,10 @@ import time
 import os
 import psutil
 
+## XXX testing...
+import subprocess
+import signal
+
 from history_store import HistoryStore
 
 
@@ -313,6 +317,10 @@ class LoggingManager:
         while ( os.path.exists(filename) ):
             filename = filename_prefix + "-" + str(i) + ".cnl"
 
+        ## XXX experimental
+        tcpprobe_filename = filename_prefix + "-" + str(i) + ".tcpprobe"
+
+
         print( "Logging to file: " + filename )
 
 
@@ -327,6 +335,17 @@ class LoggingManager:
                                                     filename)
 
 
+        ## XXX testing...
+        # test if tcp_probe file is readable
+        PATH_TO_TCP_PROBE = "/proc/net/tcp_probe"
+        self.use_tcpprobe = os.access(PATH_TO_TCP_PROBE, os.R_OK)
+        if ( self.use_tcpprobe ):
+            ## start "cat /proc/net/tcp_probe > file" in parallel (and send quit signal, when logging is stopped)
+            self.tcpprobe = subprocess.Popen("cat " + PATH_TO_TCP_PROBE + " > " + tcpprobe_filename, shell=True, preexec_fn=os.setsid)
+
+
+
+
     def _stop_measurement_logger(self):
         print( "Logging stopped. File: " + self.measurement_logger.filename )
         self.measurement_logger.close()
@@ -334,6 +353,10 @@ class LoggingManager:
         self.measurement_logger = None
         self.auto_comment = None
 
+        ## XXX experimental
+        ## kill "cat /proc/net/tcp_probe > file"
+        if ( self.use_tcpprobe ):
+            os.killpg(self.tcpprobe.pid, signal.SIGTERM)
 
 
     def _is_activity_on_nics(self, measurement):
