@@ -337,10 +337,10 @@ class LoggingManager:
 
         ## XXX testing...
         # test if tcp_probe file is readable
-        PATH_TO_TCP_PROBE = "/proc/net/tcp_probe"
+        PATH_TO_TCP_PROBE = "/proc/net/tcpprobe"
         self.use_tcpprobe = os.access(PATH_TO_TCP_PROBE, os.R_OK)
         if ( self.use_tcpprobe ):
-            ## start "cat /proc/net/tcp_probe > file" in parallel (and send quit signal, when logging is stopped)
+            ## start "cat /proc/net/tcpprobe > file" in parallel (and send quit signal, when logging is stopped)
             self.tcpprobe = subprocess.Popen("cat " + PATH_TO_TCP_PROBE + " > " + tcpprobe_filename, shell=True, preexec_fn=os.setsid)
 
 
@@ -354,7 +354,7 @@ class LoggingManager:
         self.auto_comment = None
 
         ## XXX experimental
-        ## kill "cat /proc/net/tcp_probe > file"
+        ## kill "cat /proc/net/tcpprobe > file"
         if ( self.use_tcpprobe ):
             os.killpg(self.tcpprobe.pid, signal.SIGTERM)
 
