@@ -316,9 +316,10 @@ class LoggingManager:
         i = 0
         while ( os.path.exists(filename) ):
             filename = filename_prefix + "-" + str(i) + ".cnl"
+            i += 1
 
         ## XXX experimental
-        tcpprobe_filename = filename_prefix + "-" + str(i) + ".tcpprobe"
+        tcpprobe_filename = filename[:-4] + ".tcpprobe"
 
 
         print( "Logging to file: " + filename )
