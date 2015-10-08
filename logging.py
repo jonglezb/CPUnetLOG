@@ -273,8 +273,8 @@ class LoggingManager:
         self.watch_experiment = watch_experiment
 
         # auto-logging
-        self.INACTIVITY_THRESHOLD       = 30
-        self.HISTORY_SIZE               = 5
+        self.INACTIVITY_THRESHOLD       = 30   # seconds
+        self.HISTORY_SIZE               = 5    # samples
         self.auto_logging = autologging
         if ( autologging ):
             self.log_history = HistoryStore(self.HISTORY_SIZE)
@@ -395,7 +395,7 @@ class LoggingManager:
 
         ## Branch: Inactive sample.
         if ( not self._is_activity_on_nics(measurement) ):
-            self.inactivity_count += 1
+            self.inactivity_count += measurement.timespan
 
             ## Inactivity phase too long: Stop logging.
             if ( self.inactivity_count >= self.INACTIVITY_THRESHOLD ):

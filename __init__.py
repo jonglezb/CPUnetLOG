@@ -135,8 +135,8 @@ def main_loop():
     """
 
     ## TODO this should be configurable by command line options
-    sample_interval = 0.1
-    display_interval = 1.0
+    sample_interval = float(args.interval)
+    display_interval = float(args.displayinterval)
 
     display_skip = max(display_interval / sample_interval, 1)
 
@@ -226,6 +226,11 @@ if __name__ == "__main__":
                         help="Path where the log files are stored in. (See --logging.)")
     parser.add_argument("-e", "--environment",
                         help="JSON file that holds arbitrary environment context. (This can be seen as a structured comment field.)")
+    parser.add_argument("-i", "--interval", default="0.5",
+                        help="Time between two samples (in seconds). [Default = 0.5]")
+    parser.add_argument("-d", "--displayinterval", default="1",
+                        help="Time between two display updates (in seconds). [Default = 1]")
+
 
     # NICs
     parser.add_argument("--nics", nargs='+',
