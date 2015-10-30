@@ -246,20 +246,13 @@ if __name__ == "__main__":
         assert( set(nics).issuperset(args.nics) )
         monitored_nics = args.nics
 
-    ## Read environment file (if given).
-    if ( args.environment ):
-        with open(args.environment) as f:
-            environment = json.load(f)
-    else:
-        environment = None
-
     ## --autologging implies --logging
     if ( args.autologging ):
         args.logging = True
 
 
     ## Logging
-    logging_manager = LoggingManager( psutil.NUM_CPUS, monitored_nics, helpers.get_sysinfo(), environment,
+    logging_manager = LoggingManager( psutil.NUM_CPUS, monitored_nics, helpers.get_sysinfo(), args.environment,
                                       args.comment, args.path, args.autologging, args.watch )
     if args.logging:
         logging_manager.enable_measurement_logger()

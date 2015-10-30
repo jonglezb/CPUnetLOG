@@ -329,9 +329,17 @@ class LoggingManager:
         if ( self.watch_experiment ):
             self.auto_comment = self._find_cmd_line_of(self.watch_experiment)
 
+        ## Read environment file (if given).
+        if ( self.environment ):
+            with open(self.environment) as f:
+                environment = json.load(f)
+        else:
+            environment = None
+
+
         # Create Logger.
         self.measurement_logger = MeasurementLogger(self.num_cpus, self.nics, [date,t],
-                                                    self.system_info, self.environment,
+                                                    self.system_info, environment,
                                                     self.auto_comment if self.auto_comment else self.comment,
                                                     filename)
 
