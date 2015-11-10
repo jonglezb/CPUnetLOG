@@ -148,12 +148,25 @@ def init():
         curses.init_pair(7, curses.COLOR_RED, -1)
 
     ## Show some output to avoid upsetting the user
-    stdscr.addstr(3, 3, "loading ...", curses.A_BOLD)
-    stdscr.refresh()
+    try:
+        stdscr.addstr(3, 3, "loading ...", curses.A_BOLD)
+        stdscr.refresh()
+    except:
+        print( "\nDisplay Error! (Check terminal-size)" )
+
 
 
 
 def display(measurement):
+    try:
+        return _display(measurement)
+    except:
+        print( "\nDisplay Error! (Check terminal-size)" )
+
+        return True
+
+
+def _display(measurement):
     global stdscr
 
     ## Press 'q' to quit.
@@ -225,9 +238,9 @@ def display(measurement):
         _send = values.ratio["bytes_sent"] * 8  # Bits/s
         _recv = values.ratio["bytes_recv"] * 8  # Bits/s
         sending = _format_net_speed( _send )
-        send_ratio = _send/nic_speeds[nic]
+        send_ratio = min( _send/nic_speeds[nic], 1.0 )
         receiving = _format_net_speed( _recv )
-        receive_ratio = _recv/nic_speeds[nic]
+        receive_ratio = min( _recv/nic_speeds[nic], 1.0 )
 
         sum_sending += _send
         sum_receiving += _recv
