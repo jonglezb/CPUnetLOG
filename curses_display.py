@@ -82,6 +82,14 @@ def _format_net_speed(speed):
     return str( round(speed / divisor, rounding_digits) )
 
 
+def _calculate_net_ratio( cur_speed, max_speed ):
+    ratio = cur_speed / max_speed
+
+    ratio = min( ratio, 1.0 )
+    ratio = max( ratio, 0.0 )
+
+
+
 def _display_cpu_bar(y, x, cpu):
     # Constants
     CPU_BAR_COLORS = ( curses.color_pair(3) | curses.A_REVERSE,    # user
@@ -238,9 +246,9 @@ def _display(measurement):
         _send = values.ratio["bytes_sent"] * 8  # Bits/s
         _recv = values.ratio["bytes_recv"] * 8  # Bits/s
         sending = _format_net_speed( _send )
-        send_ratio = min( _send/nic_speeds[nic], 1.0 )
+        send_ratio = _calculate_net_ratio( _send, nic_speeds[nic] )
         receiving = _format_net_speed( _recv )
-        receive_ratio = min( _recv/nic_speeds[nic], 1.0 )
+        receive_ratio = _calculate_net_ratio( _recv, nic_speeds[nic] )
 
         sum_sending += _send
         sum_receiving += _recv
