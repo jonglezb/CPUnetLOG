@@ -88,6 +88,7 @@ def _calculate_net_ratio( cur_speed, max_speed ):
     ratio = min( ratio, 1.0 )
     ratio = max( ratio, 0.0 )
 
+    return ratio
 
 
 def _display_cpu_bar(y, x, cpu):
