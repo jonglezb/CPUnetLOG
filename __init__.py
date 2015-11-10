@@ -243,7 +243,7 @@ if __name__ == "__main__":
     ## NICs
     monitored_nics = nics
     if ( args.nics ):
-        assert( set(nics).issuperset(args.nics) )
+        #assert( set(nics).issuperset(args.nics) )
         monitored_nics = args.nics
 
     ## --autologging implies --logging

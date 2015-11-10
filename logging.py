@@ -172,11 +172,14 @@ class MeasurementLogger:
 
     def _log_nics(self, measurement, out_vector):
         for nic in self.nics:
-            values = measurement.net_io[nic]
+            try:
+                values = measurement.net_io[nic]
 
-            out_vector.extend( [values.ratio["bytes_sent"] * 8,    # Bits/s
-                              values.ratio["bytes_recv"] * 8] )  # Bits/s
-
+                out_vector.extend( [values.ratio["bytes_sent"] * 8,    # Bits/s
+                                values.ratio["bytes_recv"] * 8] )  # Bits/s
+            except KeyError:
+                ## TODO: is 0 a good value to log, in this case?
+                out_vector.extend( (0, 0) )
 
 
     def log(self, measurement):
@@ -370,10 +373,13 @@ class LoggingManager:
 
     def _is_activity_on_nics(self, measurement):
         for nic in self.nics:
-            values = measurement.net_io[nic]
+            try:
+                values = measurement.net_io[nic]
 
-            if ( values.ratio["bytes_sent"] > 0 or values.ratio["bytes_recv"] > 0 ):
-                return True
+                if ( values.ratio["bytes_sent"] > 0 or values.ratio["bytes_recv"] > 0 ):
+                    return True
+            except KeyError:
+                pass
 
         return False
 
