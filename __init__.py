@@ -147,7 +147,8 @@ def main_loop():
         ui.nics = nics
         ui.nic_speeds = nic_speeds
         ui.logging_manager = logging_manager
-        ui.init()
+        if not args.headless:
+            ui.init()
 
         # Take an initial reading.
         old_reading = Reading()
@@ -167,7 +168,7 @@ def main_loop():
 
             # Display/log the measurement.
             running &= logging_manager.log(measurement)
-            if ( display_skip_counter % display_skip < 1 ):   # the display may skip some samples
+            if ( display_skip_counter % display_skip < 1 ) and not args.headless:   # the display may skip some samples
                 running = ui.display( measurement )
                 display_skip_counter = 0
             display_skip_counter += 1
@@ -189,7 +190,8 @@ def main_loop():
         exc_type, exc_value, exc_traceback = sys.exc_info()
     finally:
         # Tear down the UI.
-        ui.close()
+        if not args.headless:
+            ui.close()
         logging_manager.close()
 
     ## On error: Print error message *after* curses has quit.
@@ -210,7 +212,7 @@ if __name__ == "__main__":
 
     ## Command line arguments
     import argparse
-
+#
     parser = argparse.ArgumentParser()
 
     ## Logging
@@ -235,6 +237,9 @@ if __name__ == "__main__":
     # NICs
     parser.add_argument("--nics", nargs='+',
                         help="The network interfaces that should be displayed (and logged, see --logging).")
+
+    parser.add_argument("-q", "--headless", action="store_true", 
+                        help="Run in quiet/headless mode without GUI")
 
     args = parser.parse_args()
 
