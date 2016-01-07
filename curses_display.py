@@ -39,6 +39,9 @@ divisor = 1000000.0
 rounding_digits = 2
 unit = "MBits"
 
+EXISTING_NIC_SPEEDS = [ x * 1000000 for x in (10, 100, 1000, 10000) ]   # in bit/s
+
+
 LOGGING_STATE_COLORS = {"Active": 3, "(Active)": 2, "Disabled": 1, "Standby": 4, "Enabled": 3}
 
 CPU_TYPE_LABELS = { "user": "user: ",
@@ -75,6 +78,43 @@ COMMENT_WIDTH = 66
 #   - Also draw a bar for the totals?
 
 ## TODO idea: smoothing..?
+
+
+
+
+def reset_nic_speeds():
+    """
+      Resets the maximum NIC-speed of all devices to a minimum.
+
+      Note: The maximum will subsequently be adjusted by the function "adjust_nic_speeds".
+    """
+
+    for x in nic_speeds:
+        nic_speeds[x] = EXISTING_NIC_SPEEDS[0]
+
+
+
+def adjust_nic_speeds(send, receive, nic):
+    """
+      Adjust the maximum speed of the NIC, if it was detected wrong
+    """
+    global nic_speeds
+
+    MARGIN = 1000   # +1 kbit/s just to be sure..
+    #MARGIN = 0
+
+    cur = max(send, receive)
+
+    if ( cur > nic_speeds[nic] + MARGIN ):
+        new_speed = nic_speeds[nic]
+        for x in EXISTING_NIC_SPEEDS:
+            if ( cur < x + MARGIN ):
+                new_speed = x
+                break
+
+        nic_speeds[nic] = new_speed
+
+        ## TODO: maybe change color...
 
 
 
@@ -182,6 +222,8 @@ def _display(measurement):
     pressedkey = stdscr.getch()
     if pressedkey == ord('q'):
         return False
+    elif pressedkey == ord('-'):
+        reset_nic_speeds()
 
     ## Header
     stdscr.clear()
@@ -246,6 +288,10 @@ def _display(measurement):
 
         _send = values.ratio["bytes_sent"] * 8  # Bits/s
         _recv = values.ratio["bytes_recv"] * 8  # Bits/s
+
+        ## TESTING increase inc_speed, if throughput is higher than (expected) maximum
+        adjust_nic_speeds(_send, _recv, nic)
+
         sending = _format_net_speed( _send )
         send_ratio = _calculate_net_ratio( _send, nic_speeds[nic] )
         receiving = _format_net_speed( _recv )
