@@ -257,7 +257,7 @@ if __name__ == "__main__":
 
 
     ## Logging
-    logging_manager = LoggingManager( psutil.NUM_CPUS, monitored_nics, helpers.get_sysinfo(), args.environment,
+    logging_manager = LoggingManager( psutil.cpu_count(), monitored_nics, helpers.get_sysinfo(), args.environment,
                                       args.comment, args.path, args.autologging, args.watch )
     if args.logging:
         logging_manager.enable_measurement_logger()
