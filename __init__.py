@@ -255,9 +255,14 @@ if __name__ == "__main__":
     if ( args.autologging ):
         args.logging = True
 
+    ## compensate psutil version incompatibilities
+    try:
+        num_cpus = psutil.cpu_count()
+    except:
+        num_cpus = psutil.NUM_CPUS
 
     ## Logging
-    logging_manager = LoggingManager( psutil.cpu_count(), monitored_nics, helpers.get_sysinfo(), args.environment,
+    logging_manager = LoggingManager( num_cpus, monitored_nics, helpers.get_sysinfo(), args.environment,
                                       args.comment, args.path, args.autologging, args.watch )
     if args.logging:
         logging_manager.enable_measurement_logger()
