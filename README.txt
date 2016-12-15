@@ -1,6 +1,6 @@
 CPUnetLOG ist based on Python3.
 
-## install (Ubuntu 14.04)
+## install (Ubuntu 16.04)
 # Requirements:
 
 sudo apt-get install python3
