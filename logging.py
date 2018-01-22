@@ -292,6 +292,7 @@ class CNLFileWriter:
 
 
 class LoggingManager:
+    """If path == None, logs will be written to stdout"""
     def __init__(self, num_cpus, nics, system_info, environment, comment, path, autologging, watch_experiment):
         self.num_cpus = num_cpus
         self.nics = nics
@@ -334,22 +335,24 @@ class LoggingManager:
         else:
             t = time.time()
 
-        # Create filename from start time.
         date = time.strftime("%Y-%m-%d_%H:%M:%S", time.localtime(t))
-        filename_prefix = self.path + "/" + date + "-" + self.hostname
-        filename = filename_prefix + ".cnl"
+        if self.path:
+            # Create filename from start time.
+            filename_prefix = self.path + "/" + date + "-" + self.hostname
+            filename = filename_prefix + ".cnl"
 
-        # Make sure the filename is unique.
-        i = 0
-        while ( os.path.exists(filename) ):
-            filename = filename_prefix + "-" + str(i) + ".cnl"
-            i += 1
+            # Make sure the filename is unique.
+            i = 0
+            while ( os.path.exists(filename) ):
+                filename = filename_prefix + "-" + str(i) + ".cnl"
+                i += 1
 
-        ## experimental "tcp_probe"
-        #tcpprobe_filename = filename[:-4] + ".tcpprobe"
+            ## experimental "tcp_probe"
+            #tcpprobe_filename = filename[:-4] + ".tcpprobe"
 
-
-        print( "Logging to file: " + filename )
+            print( "Logging to file: " + filename )
+        else:
+            filename = "/dev/stdout"
 
 
         # Auto-comment: Store the command line of the observed tool/experiment.
@@ -383,7 +386,7 @@ class LoggingManager:
 
 
     def _stop_measurement_logger(self):
-        print( "Logging stopped. File: " + self.measurement_logger.filename )
+        #print( "Logging stopped. File: " + self.measurement_logger.filename )
         self.measurement_logger.close()
 
         self.measurement_logger = None

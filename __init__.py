@@ -230,6 +230,8 @@ if __name__ == "__main__":
                         help="A comment that is stored in the logfile. (See --logging.)")
     parser.add_argument("--path", default="/tmp/cpunetlog",
                         help="Path where the log files are stored in. (See --logging.)")
+    parser.add_argument("--stdout", action="store_true",
+                        help="Log to stdout instead of writing to a file (implies --logging and --headless, ignores --path)")
     parser.add_argument("-e", "--environment",
                         help="JSON file that holds arbitrary environment context. (This can be seen as a structured comment field.)")
     parser.add_argument("-i", "--interval", default="0.5",
@@ -258,6 +260,13 @@ if __name__ == "__main__":
     ## --autologging implies --logging
     if ( args.autologging ):
         args.logging = True
+
+    ## --stdout implies --logging and --headless
+    if args.stdout:
+        args.logging = True
+        args.headless = True
+        # By convention, path == None means "output to stdout"
+        args.path = None
 
     ## compensate psutil version incompatibilities
     try:
