@@ -15,6 +15,11 @@ import netifaces
 import operator
 
 
+def get_nb_open_files():
+    with open("/proc/sys/fs/file-nr") as f:
+        data = f.read()
+    return int(data.split('\t')[0])
+
 def get_nics():
     return netifaces.interfaces()
 

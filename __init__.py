@@ -54,6 +54,7 @@ class Reading:
         self.cpu_times = psutil.cpu_times(percpu=True)
         self.memory = psutil.virtual_memory()
         self.net_io = psutil.net_io_counters(pernic=True)
+        self.nb_open_files = helpers.get_nb_open_files()
 
     def __str__(self):
         ## •‣∘⁕∗◘☉☀★◾☞☛⦿
@@ -94,6 +95,9 @@ class Measurement:
         self.timespan = self.r2.timestamp - self.r1.timestamp
         self.cpu_times_percent = calculate_cpu_times_percent(self.r1.cpu_times, self.r2.cpu_times, percpu=True)
         self.net_io = self._calculate_net_io()
+        # Point measurement are measured at a given point in time, not during a timespan.  We use the second reading.
+        self.memory = self.r2.memory
+        self.nb_open_files = self.r2.nb_open_files
 
 
     def _calculate_net_io(self):

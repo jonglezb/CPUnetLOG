@@ -46,7 +46,7 @@ class MeasurementLogger:
         self.filename = filename
 
         ## Constants / Characteristics
-        self.class_names = ("Time", "CPU", "NIC")
+        self.class_names = ("Time", "CPU", "NIC", "Memory", "Files")
         self.type_string = "CPUnetLOG:MeasurementLog"
 
         ## Run "outsourced" init functions.
@@ -68,6 +68,8 @@ class MeasurementLogger:
         self.log_functions["Time"] = self._log_time
         self.log_functions["CPU"] = self._log_cpus
         self.log_functions["NIC"] = self._log_nics
+        self.log_functions["Memory"] = self._log_memory
+        self.log_functions["Files"] = self._log_files
 
 
         ## Initialize file writer.
@@ -102,6 +104,20 @@ class MeasurementLogger:
                             siblings    = None,
                             description = "Begin, end, and duration (in seconds) of this measurement." )
         class_defs["Time"] = time
+
+        # set up "Memory" class
+        memory = LoggingClass( name        = "Memory",
+                               fields      = ("total", "available", "used", "free", "active", "inactive", "buffers", "cached", "shared"),
+                               siblings    = None,
+                               description = "Memory usage in bytes" )
+        class_defs["Memory"] = memory
+
+        # set up "Files" class
+        files = LoggingClass( name        = "Files",
+                              fields      = ("open",),
+                              siblings    = None,
+                              description = "Number of open file descriptors (this includes network sockets)" )
+        class_defs["Files"] = files
 
         return class_defs
 
@@ -180,6 +196,14 @@ class MeasurementLogger:
             except KeyError:
                 ## TODO: is 0 a good value to log, in this case?
                 out_vector.extend( (0, 0) )
+
+
+    def _log_memory(self, measurement, out_vector):
+        mem = measurement.memory
+        out_vector.extend( [mem.total, mem.available, mem.used, mem.free, mem.active, mem.inactive, mem.buffers, mem.cached, mem.shared] )
+
+    def _log_files(self, measurement, out_vector):
+        out_vector.extend( [measurement.nb_open_files] )
 
 
     def log(self, measurement):
