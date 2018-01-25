@@ -107,14 +107,14 @@ class MeasurementLogger:
 
         # set up "Memory" class
         memory = LoggingClass( name        = "Memory",
-                               fields      = ("total", "available", "used", "free", "active", "inactive", "buffers", "cached", "shared"),
+                               fields      = ("mem.total", "mem.available", "mem.used", "mem.free", "mem.active", "mem.inactive", "mem.buffers", "mem.cached", "mem.shared"),
                                siblings    = None,
                                description = "Memory usage in bytes" )
         class_defs["Memory"] = memory
 
         # set up "Files" class
         files = LoggingClass( name        = "Files",
-                              fields      = ("open",),
+                              fields      = ("fd.open",),
                               siblings    = None,
                               description = "Number of open file descriptors (this includes network sockets)" )
         class_defs["Files"] = files
