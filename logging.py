@@ -93,9 +93,9 @@ class MeasurementLogger:
 
         # set up "NIC" class
         nic = LoggingClass( name        = "NIC",
-                            fields      = ("send", "receive"),
+                            fields      = ("send", "receive", "send_pps", "receive_pps"),
                             siblings    = nics,
-                            description = "Network traffic (Bits/s)" )
+                            description = "Network traffic (bits/s and packets/s)" )
         class_defs["NIC"] = nic
 
         # set up "Time" class
@@ -192,10 +192,12 @@ class MeasurementLogger:
                 values = measurement.net_io[nic]
 
                 out_vector.extend( [values.ratio["bytes_sent"] * 8,    # Bits/s
-                                values.ratio["bytes_recv"] * 8] )  # Bits/s
+                                    values.ratio["bytes_recv"] * 8,    # Bits/s
+                                    values.ratio["packets_sent"],      # Packets/s
+                                    values.ratio["packets_recv"]] )    # Packets/s
             except KeyError:
                 ## TODO: is 0 a good value to log, in this case?
-                out_vector.extend( (0, 0) )
+                out_vector.extend( (0, 0, 0, 0) )
 
 
     def _log_memory(self, measurement, out_vector):
